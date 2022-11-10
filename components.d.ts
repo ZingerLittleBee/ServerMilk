@@ -15,5 +15,6 @@ declare module '@vue/runtime-core' {
     TInput: typeof import('tdesign-vue-next')['Input']
     TInputNumber: typeof import('tdesign-vue-next')['InputNumber']
     TRow: typeof import('tdesign-vue-next')['Row']
+    TTag: typeof import('tdesign-vue-next')['Tag']
   }
 }
