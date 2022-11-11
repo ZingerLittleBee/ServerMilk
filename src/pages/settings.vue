@@ -2,33 +2,36 @@
 import { exit } from '@tauri-apps/api/process'
 import { invoke } from '@tauri-apps/api/tauri'
 import { CheckCircleIcon, ErrorCircleIcon } from 'tdesign-icons-vue-next'
-import { onMounted, ref } from 'vue'
-import usePreference from '../hooks/usePreference'
-
-const [pre, setPre] = usePreference()
-
-const port = ref(6000)
+import { onMounted, Ref, ref } from 'vue'
+import usePreference, { Preference } from '../hooks/usePreference'
 
 const isEditing = ref(false)
+
+let pre: Ref<Preference> = ref({})
+let setPre: Function
+
+const port = ref()
+
+onMounted(async () => {
+	const preference = await usePreference()
+	pre.value = preference[0].value
+	setPre = preference[1]
+	port.value = pre.value.port
+})
 
 const handleChangePort = async () => {
 	if (port.value >= 0 && port.value <= 65535) {
 		isEditing.value = false
+		await setPre('port', port.value)
+		invoke('web_server_restart')
 	}
-	await setPre('port', port.value)
-	invoke('web_server_restart')
 }
+
 const handleLaunchChange = (e: boolean) => {
 	setPre('isEnableAutoLaunch', e)
 }
 
 const isRunning = ref(false)
-
-onMounted(async () => {
-	if (pre.value.port) {
-		port.value = pre.value.port
-	}
-})
 
 const openLog = async () => {
 	invoke('open_web_log')
