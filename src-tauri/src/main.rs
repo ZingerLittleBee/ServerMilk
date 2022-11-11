@@ -47,23 +47,11 @@ fn main() {
             let web_server_state = WebServerState::new((srv, sys));
             app.manage(web_server_state);
 
-            // async_runtime::spawn(async move {
-            //     let rt = tokio::runtime::Handle::current();
-            //     let rt_ = rt.clone();
-            //     rt.spawn_blocking(move || {
-            //         rt_.block_on(async {
-            //             let local = tokio::task::LocalSet::new();
-            //             let _ = local.run_until(runner::web_runner(config_dir)).await;
-            //             println!("block on: ");
-            //         })
-            //     });
-            // });
-
             let main_window = app.get_window("main").unwrap();
             main_window
                 .set_size(Size::Logical(LogicalSize {
-                    width: 350.0,
-                    height: 400.0,
+                    width: 320.0,
+                    height: 360.0,
                 }))
                 .unwrap();
             main_window.set_resizable(false).unwrap();
