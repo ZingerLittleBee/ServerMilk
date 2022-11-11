@@ -17,6 +17,7 @@ mod vo;
 use crate::command::{
     launch::{disable_auto_launch, enable_auto_launch, is_enable_auto_launch},
     log::open_web_log,
+    port::is_free_port,
     state::web_server_restart,
 };
 use tauri::{LogicalSize, Manager, Size};
@@ -30,7 +31,8 @@ fn main() {
             enable_auto_launch,
             disable_auto_launch,
             web_server_restart,
-            open_web_log
+            open_web_log,
+            is_free_port
         ])
         .system_tray(tray::menu())
         .on_system_tray_event(tray::handler)

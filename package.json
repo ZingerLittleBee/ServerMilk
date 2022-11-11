@@ -10,14 +10,14 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.1.0",
+    "@tauri-apps/api": "^1.2.0",
     "tauri-settings": "^0.1.2",
     "tdesign-icons-vue-next": "^0.1.5",
     "tdesign-vue-next": "^0.24.5",
     "vue": "^3.2.37"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.1.0",
+    "@tauri-apps/cli": "^1.2.0",
     "@types/node": "^18.7.10",
     "@vitejs/plugin-vue": "^3.0.1",
     "autoprefixer": "^10.4.13",

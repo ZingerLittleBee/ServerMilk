@@ -2,7 +2,7 @@
 import { exit } from '@tauri-apps/api/process'
 import { invoke } from '@tauri-apps/api/tauri'
 import { CheckCircleIcon, ErrorCircleIcon } from 'tdesign-icons-vue-next'
-import { onMounted, Ref, ref } from 'vue'
+import { onMounted, reactive, Ref, ref } from 'vue'
 import usePreference, { Preference } from '../hooks/usePreference'
 
 const isEditing = ref(false)
@@ -19,16 +19,35 @@ onMounted(async () => {
 	port.value = pre.value.port
 })
 
-const handleChangePort = async () => {
+const handleLaunchChange = (e: boolean) => {
+	setPre('isEnableAutoLaunch', e)
+}
+
+const portError = reactive({
+	isErr: false,
+	msg: ''
+})
+
+const changePort = async () => {
 	if (port.value >= 0 && port.value <= 65535) {
-		isEditing.value = false
-		await setPre('port', port.value)
-		invoke('web_server_restart')
+		if (await invoke('is_free_port', { port: port.value })) {
+			isEditing.value = false
+			await setPre('port', port.value)
+			invoke('web_server_restart')
+		} else {
+			portError.isErr = true
+			portError.msg = '端口已被占用, 请更换其他端口'
+		}
+	} else {
+		portError.isErr = true
+		portError.msg = '端口范围为 0 - 65535'
 	}
 }
 
-const handleLaunchChange = (e: boolean) => {
-	setPre('isEnableAutoLaunch', e)
+const changePortCancel = () => {
+	isEditing.value = false
+	port.value = pre.value.port
+	portError.isErr = false
 }
 
 const isRunning = ref(false)
@@ -90,17 +109,21 @@ const exitProcess = () => {
 						size="small"
 						theme="primary"
 						variant="text"
-						@click="handleChangePort"
+						@click="changePort"
 						>确定</t-button
 					>
 					<t-button
 						size="small"
 						theme="primary"
 						variant="text"
-						@click="isEditing = false"
+						@click="changePortCancel"
 						>取消</t-button
 					>
 				</div>
+			</div>
+			<div v-if="portError.isErr" class="content__left"></div>
+			<div v-if="portError.isErr" class="content__right">
+				<span class="content__right--error">{{ portError.msg }}</span>
 			</div>
 			<div class="content__left"><p>运行日志:</p></div>
 			<div class="content__right">
@@ -148,6 +171,10 @@ const exitProcess = () => {
 
 			.content__right--port {
 				@apply flex items-center;
+			}
+
+			.content__right--error {
+				@apply text-red-500 text-sm;
 			}
 		}
 	}

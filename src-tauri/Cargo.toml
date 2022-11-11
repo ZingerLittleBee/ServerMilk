@@ -33,6 +33,7 @@ tokio-stream = "0.1.8"
 sysinfo = "0.26.1"
 serde_yaml = "0.9.4"
 anyhow = "1.0"
+port-selector = "0.1.6"
 
 [target.'cfg(not(windows))'.dependencies]
 systemstat = "0.2.1"
