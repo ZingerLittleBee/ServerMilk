@@ -83,7 +83,6 @@ impl Config {
     }
 
     pub fn get_server_port(path: PathBuf) -> u16 {
-        println!("read_config: {:#?}", Self::read_config(path.clone()));
         let d = Self::read_config(path).unwrap_or_default();
         d.port
     }

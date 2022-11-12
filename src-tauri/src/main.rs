@@ -23,6 +23,7 @@ use crate::command::{
 use tauri::{LogicalSize, Manager, Size};
 
 use crate::command::state::WebServerState;
+use crate::command::status::check_web_status;
 
 fn main() {
     tauri::Builder::default()
@@ -32,7 +33,8 @@ fn main() {
             disable_auto_launch,
             web_server_restart,
             open_web_log,
-            is_free_port
+            is_free_port,
+            check_web_status
         ])
         .system_tray(tray::menu())
         .on_system_tray_event(tray::handler)

@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { exit } from '@tauri-apps/api/process'
 import { invoke } from '@tauri-apps/api/tauri'
-import { CheckCircleIcon, ErrorCircleIcon } from 'tdesign-icons-vue-next'
+import {
+	CheckCircleIcon,
+	ErrorCircleIcon,
+	RefreshIcon
+} from 'tdesign-icons-vue-next'
 import { onMounted, reactive, Ref, ref } from 'vue'
 import usePreference, { Preference } from '../hooks/usePreference'
 
@@ -11,6 +15,8 @@ let pre: Ref<Preference> = ref({})
 let setPre: Function
 
 const port = ref()
+
+const isRunning = ref(true)
 
 onMounted(async () => {
 	const preference = await usePreference()
@@ -50,13 +56,23 @@ const changePortCancel = () => {
 	portError.isErr = false
 }
 
-const isRunning = ref(false)
-
 const openLog = async () => {
 	invoke('open_web_log')
 }
 const exitProcess = () => {
 	exit(0)
+}
+
+const isRefresh = ref(false)
+
+const refreshStatus = async () => {
+	isRefresh.value = true
+	isRunning.value = await invoke<boolean>('check_web_status', {
+		port: pre.value.port
+	})
+	setTimeout(() => {
+		isRefresh.value = false
+	}, 1000)
 }
 </script>
 
@@ -65,14 +81,24 @@ const exitProcess = () => {
 		<div class="content-wrapper">
 			<div class="content__left"><p>运行状态:</p></div>
 			<div class="content__right">
-				<t-tag v-if="isRunning" theme="success">
-					<CheckCircleIcon />
-					正在运行
-				</t-tag>
-				<t-tag v-else theme="warning">
-					<ErrorCircleIcon />
-					<span>停止运行</span>
-				</t-tag>
+				<div class="content__right--status">
+					<t-tag v-if="isRunning" theme="success">
+						<CheckCircleIcon />
+						正在运行
+					</t-tag>
+					<t-tag v-else theme="warning">
+						<ErrorCircleIcon />
+						<span>停止运行</span>
+					</t-tag>
+					<t-button
+						shape="circle"
+						variant="text"
+						@click="refreshStatus"
+						:class="isRefresh ? 'refresh-btn' : ''"
+					>
+						<RefreshIcon
+					/></t-button>
+				</div>
 			</div>
 			<div class="content__left"><p>启动:</p></div>
 			<div class="content__right">
@@ -169,6 +195,15 @@ const exitProcess = () => {
 		.content__right {
 			@apply col-span-2 w-36;
 
+			.content__right--status {
+				@apply flex flex-row items-center justify-start;
+
+				.refresh-btn {
+					animation-duration: 1.5s;
+					animation-name: rotatefresh;
+					animation-iteration-count: infinite;
+				}
+			}
 			.content__right--port {
 				@apply flex items-center;
 			}
@@ -177,6 +212,15 @@ const exitProcess = () => {
 				@apply text-red-500 text-sm;
 			}
 		}
+	}
+}
+
+@keyframes rotatefresh {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
 	}
 }
 </style>
