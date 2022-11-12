@@ -3,23 +3,22 @@ use std::thread;
 use std::time::Duration;
 
 use actix_rt::System;
-use actix_web::dev::Server;
+use actix_web::dev::ServerHandle;
 use tauri::State;
 
 use crate::runner;
 
-pub struct WebServerState(pub Mutex<Server>, pub Mutex<System>);
+pub struct WebServerState(pub Mutex<ServerHandle>, pub Mutex<System>);
 
 impl WebServerState {
-    pub(crate) fn new(tup: (Server, System)) -> Self {
+    pub(crate) fn new(tup: (ServerHandle, System)) -> Self {
         WebServerState(Mutex::from(tup.0), Mutex::from(tup.1))
     }
 }
 
 #[tauri::command]
 pub fn web_server_restart(app_handle: tauri::AppHandle, state: State<'_, WebServerState>) {
-    println!("command web_server_restart");
-    let _ = state.0.lock().unwrap().handle().stop(false);
+    let _ = state.0.lock().unwrap().stop(false);
     thread::sleep(Duration::from_millis(1000));
     let _ = state.1.lock().unwrap().stop();
     thread::sleep(Duration::from_millis(1000));

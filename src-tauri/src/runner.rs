@@ -3,7 +3,7 @@ use std::sync::mpsc;
 use std::thread;
 
 use actix_rt::System;
-use actix_web::dev::Server;
+use actix_web::dev::ServerHandle;
 use actix_web::{middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer, Responder};
 use actix_web_actors::ws;
 use log::info;
@@ -30,7 +30,7 @@ async fn echo_ws(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse,
     ws::start(MyWebSocket::new(), &req, stream)
 }
 
-pub(crate) fn web_runner(config_path: PathBuf, log_path: PathBuf) -> (Server, System) {
+pub(crate) fn web_runner(config_path: PathBuf, log_path: PathBuf) -> (ServerHandle, System) {
     let (tx, rx) = mpsc::channel();
 
     Config::init_logging(log_path);
@@ -39,8 +39,10 @@ pub(crate) fn web_runner(config_path: PathBuf, log_path: PathBuf) -> (Server, Sy
 
     info!("starting HTTP server at http://localhost:{}", port);
 
-    thread::spawn(move || {
-        let sys = System::new();
+    let builder = thread::Builder::new().name("serverbee-web".into());
+
+    let _ = builder.spawn(move || {
+        let sys = actix_web::rt::System::new();
 
         let srv = HttpServer::new(|| {
             App::new()
@@ -56,12 +58,12 @@ pub(crate) fn web_runner(config_path: PathBuf, log_path: PathBuf) -> (Server, Sy
         .unwrap()
         .run();
 
-        let _ = tx.send((srv, System::current()));
+        let _ = tx.send((srv.handle(), System::current()));
+
+        let _ = sys.block_on(async move { srv.await });
+
         let _ = sys.run();
     });
     let (srv, sys) = rx.recv().unwrap();
     (srv, sys)
-    // srv.handle().stop(false);
-    // thread::sleep(Duration::from_millis(1000));
-    // let _ = sys.stop();
 }
