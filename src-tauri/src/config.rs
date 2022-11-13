@@ -30,7 +30,7 @@ struct Port {
 
 impl Default for Port {
     fn default() -> Self {
-        Port { port: 6000 }
+        Port { port: 9527 }
     }
 }
 

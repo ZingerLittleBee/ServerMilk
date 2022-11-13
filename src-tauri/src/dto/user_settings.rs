@@ -11,8 +11,8 @@ impl Default for UserSettings {
     fn default() -> Self {
         UserSettings {
             theme: None,
-            port: Option::from(6000),
-            is_enable_auto_launch: Option::from(true ),
+            port: Option::from(9527),
+            is_enable_auto_launch: Option::from(true),
         }
     }
 }
