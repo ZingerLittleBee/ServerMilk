@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "serverbee",
-    "version": "0.0.0"
+    "version": "1.0.0"
   },
   "tauri": {
     "allowlist": {
@@ -59,7 +59,12 @@
       "csp": null
     },
     "updater": {
-      "active": false
+      "active": true,
+      "endpoints": [
+        "https://gist.githubusercontent.com/ZingerLittleBee/54b35367ba0d64b2ac718fc87e7257f1/raw/ec3776e057aaff418664d13fac5e64a81f2ff9dc/serverbee-desktop-updater/{{target}}/{{current_version}}"
+      ],
+      "dialog": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM2RDU5RTkwQkI1NzFENDQKUldSRUhWZTdrSjdWTnMxVEg1Yjh5eCt1M2JCNytIdVNuN3duVm9LcUoveXdyTmlnU21ZTFEyejUK"
     },
     "windows": [
       {
