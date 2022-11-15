@@ -1,8 +1,9 @@
 import { ask } from '@tauri-apps/api/dialog'
 import { relaunch } from '@tauri-apps/api/process'
 import { checkUpdate, installUpdate } from '@tauri-apps/api/updater'
+import { MessagePlugin } from 'tdesign-vue-next'
 
-export default async function useUpdater() {
+export default async function useUpdater(needMsg = false) {
 	try {
 		const { shouldUpdate, manifest } = await checkUpdate()
 
@@ -16,6 +17,10 @@ export default async function useUpdater() {
 				await installUpdate()
 				// install complete, restart app
 				await relaunch()
+			}
+		} else {
+			if (needMsg) {
+				MessagePlugin.info('已是最新版本', 1000)
 			}
 		}
 	} catch (error) {

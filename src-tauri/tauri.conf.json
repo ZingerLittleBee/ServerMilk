@@ -69,7 +69,7 @@
       "endpoints": [
         "https://serverbee-1253263310.cos.ap-shanghai.myqcloud.com/desktop/updater.json"
       ],
-      "dialog": false,
+      "dialog": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM2RDU5RTkwQkI1NzFENDQKUldSRUhWZTdrSjdWTnMxVEg1Yjh5eCt1M2JCNytIdVNuN3duVm9LcUoveXdyTmlnU21ZTFEyejUK"
     },
     "windows": [
