@@ -1,16 +1,17 @@
 <script lang="ts" setup>
 import { appWindow } from '@tauri-apps/api/window'
 import { onMounted } from 'vue'
+import useUpdater from './hooks/useUpdater'
 import Settings from './pages/settings.vue'
 
 onMounted(async () => {
 	let theme = await appWindow.theme()
 
-	console.log('theme === dark', theme === 'dark')
-
 	theme === 'dark'
 		? document.documentElement.setAttribute('theme-mode', 'dark')
 		: document.documentElement.removeAttribute('theme-mode')
+
+	useUpdater()
 })
 </script>
 

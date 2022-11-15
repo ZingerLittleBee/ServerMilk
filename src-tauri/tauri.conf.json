@@ -20,6 +20,11 @@
         "createDir": true,
         "readDir": true,
         "writeFile": true
+      },
+      "dialog": {
+        "all": true,
+        "open": true,
+        "save": true
       }
     },
     "bundle": {
@@ -62,18 +67,18 @@
     "updater": {
       "active": true,
       "endpoints": [
-        "https://gist.githubusercontent.com/ZingerLittleBee/54b35367ba0d64b2ac718fc87e7257f1/raw/ec3776e057aaff418664d13fac5e64a81f2ff9dc/serverbee-desktop-updater/{{target}}/{{current_version}}"
+        "https://serverbee-1253263310.cos.ap-shanghai.myqcloud.com/desktop/updater.json"
       ],
-      "dialog": true,
+      "dialog": false,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM2RDU5RTkwQkI1NzFENDQKUldSRUhWZTdrSjdWTnMxVEg1Yjh5eCt1M2JCNytIdVNuN3duVm9LcUoveXdyTmlnU21ZTFEyejUK"
     },
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 360,
         "resizable": true,
         "title": "serverbee",
-        "width": 800,
+        "width": 320,
         "titleBarStyle": "Transparent"
       }
     ],

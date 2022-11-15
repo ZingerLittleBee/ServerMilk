@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getVersion } from '@tauri-apps/api/app'
 import { exit } from '@tauri-apps/api/process'
 import { invoke } from '@tauri-apps/api/tauri'
 import {
@@ -8,6 +9,7 @@ import {
 } from 'tdesign-icons-vue-next'
 import { onMounted, reactive, Ref, ref } from 'vue'
 import usePreference, { Preference } from '../hooks/usePreference'
+import useUpdater from '../hooks/useUpdater'
 
 const isEditing = ref(false)
 
@@ -18,11 +20,14 @@ const port = ref()
 
 const isRunning = ref(true)
 
+const appVersion = ref()
+
 onMounted(async () => {
 	const preference = await usePreference()
 	pre.value = preference[0].value
 	setPre = preference[1]
 	port.value = pre.value.port
+	appVersion.value = await getVersion()
 })
 
 const handleLaunchChange = (e: boolean) => {
@@ -74,6 +79,8 @@ const refreshStatus = async () => {
 		isRefresh.value = false
 	}, 1000)
 }
+
+const checkUpdate = () => useUpdater()
 </script>
 
 <template>
@@ -163,9 +170,16 @@ const refreshStatus = async () => {
 			</div>
 			<div class="content__left"><p>更新:</p></div>
 			<div class="content__right">
-				<t-button theme="default" variant="outline" size="small"
-					>检查更新</t-button
-				>
+				<div class="content__right--update">
+					<span>{{ appVersion }}</span>
+					<t-button
+						theme="default"
+						variant="outline"
+						size="small"
+						@click="checkUpdate"
+						>检查更新</t-button
+					>
+				</div>
 			</div>
 			<div class="content__left"><p>退出:</p></div>
 			<div class="content__right">
@@ -210,6 +224,10 @@ const refreshStatus = async () => {
 
 			.content__right--error {
 				@apply text-red-500 text-sm;
+			}
+
+			.content__right--update {
+				@apply flex items-center space-x-2;
 			}
 		}
 	}
