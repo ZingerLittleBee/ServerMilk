@@ -1,4 +1,3 @@
-use std::env;
 use std::fs::File;
 use std::path::PathBuf;
 
@@ -13,14 +12,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub struct WebConfig {
     server: Port,
-}
-
-impl WebConfig {
-    pub fn new(port: u16) -> Self {
-        Self {
-            server: Port { port },
-        }
-    }
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug)]
@@ -85,14 +76,5 @@ impl Config {
     pub fn get_server_port(path: PathBuf) -> u16 {
         let d = Self::read_config(path).unwrap_or_default();
         d.port
-    }
-
-    pub fn current_dir() -> PathBuf {
-        if let Ok(current_exe) = env::current_exe() {
-            if let Some(parent) = current_exe.parent() {
-                return parent.to_path_buf();
-            }
-        }
-        env::current_dir().expect("获取当前目录失败, 权限不足或当前目录不存在")
     }
 }
