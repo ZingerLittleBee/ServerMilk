@@ -1,10 +1,10 @@
 [package]
 name = "serverbee"
 version = "1.0.0"
-description = "A Tauri App"
+description = "A desktop program for iOS application named ServerBee"
 authors = ["ZingerLittleBee"]
 license = ""
-repository = ""
+repository = "https://github.com/ZingerLittleBee/serverbee-desktop"
 edition = "2021"
 rust-version = "1.57"
 
