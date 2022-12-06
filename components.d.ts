@@ -10,6 +10,7 @@ declare module '@vue/runtime-core' {
     TButton: typeof import('tdesign-vue-next')['Button']
     TCheckbox: typeof import('tdesign-vue-next')['Checkbox']
     TInputNumber: typeof import('tdesign-vue-next')['InputNumber']
+    TLink: typeof import('tdesign-vue-next')['Link']
     TTag: typeof import('tdesign-vue-next')['Tag']
   }
 }
