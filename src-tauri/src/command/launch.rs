@@ -1,9 +1,5 @@
-use std::env::current_exe;
-
-use auto_launch::{AutoLaunch, AutoLaunchBuilder};
+use auto_launch::{AutoLaunch};
 use tauri::State;
-
-use crate::command::state::WebServerState;
 
 #[tauri::command]
 pub fn is_enable_auto_launch(_: tauri::AppHandle, state: State<'_, AutoLaunch>) -> bool {
