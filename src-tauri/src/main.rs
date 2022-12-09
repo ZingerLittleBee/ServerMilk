@@ -43,12 +43,9 @@ fn main() {
         ])
         .system_tray(tray::menu())
         .on_system_tray_event(tray::handler)
-        .on_window_event(|event| match event.event() {
-            tauri::WindowEvent::CloseRequested { api, .. } => {
-                event.window().hide().unwrap();
-                api.prevent_close();
-            }
-            _ => {}
+        .on_window_event(|event| if let tauri::WindowEvent::CloseRequested { api, .. } = event.event() {
+            event.window().hide().unwrap();
+            api.prevent_close();
         })
         .setup(|app| {
             // don't show on the taskbar/springboard

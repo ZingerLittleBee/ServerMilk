@@ -8,11 +8,10 @@ pub fn menu() -> SystemTray {
 }
 
 // 菜单事件
-pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
+pub fn handler(app: &AppHandle, _: SystemTrayEvent) {
     let window = app.get_window("main").unwrap();
-    match event {
-        _ => {
-            window.show().unwrap();
-        }
+    {
+        window.show().unwrap();
+        window.set_always_on_top(true).unwrap();
     }
 }
