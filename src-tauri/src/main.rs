@@ -3,6 +3,11 @@ all(not(debug_assertions), target_os = "windows"),
 windows_subsystem = "windows"
 )]
 
+use std::env::current_exe;
+
+use anyhow::anyhow;
+use anyhow::Result;
+use auto_launch::{AutoLaunch, AutoLaunchBuilder};
 use tauri::{LogicalSize, Manager, Size};
 
 use crate::command::{
@@ -43,9 +48,6 @@ fn main() {
                 event.window().hide().unwrap();
                 api.prevent_close();
             }
-            tauri::WindowEvent::Focused(false) => {
-                event.window().hide().unwrap();
-            }
             _ => {}
         })
         .setup(|app| {
@@ -63,9 +65,9 @@ fn main() {
             let web_server_state = WebServerState::new((srv, sys));
             app.manage(web_server_state);
 
-            let main_window = app.get_window("main").unwrap();
+            app.manage(init_launch().unwrap());
 
-            main_window.set_always_on_top(true).unwrap();
+            let main_window = app.get_window("main").unwrap();
 
             main_window
                 .set_size(Size::Logical(LogicalSize {
@@ -78,4 +80,39 @@ fn main() {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+fn init_launch() -> Result<AutoLaunch> {
+    let app_exe = current_exe()?;
+    let app_exe = dunce::canonicalize(app_exe)?;
+    let app_name = app_exe
+        .file_stem()
+        .and_then(|f| f.to_str())
+        .ok_or(anyhow!("failed to get file stem"))?;
+
+    let app_path = app_exe
+        .as_os_str()
+        .to_str()
+        .ok_or(anyhow!("failed to get app_path"))?
+        .to_string();
+
+    #[cfg(target_os = "windows")]
+        let app_path = format!("\"{app_path}\"");
+
+    #[cfg(target_os = "macos")]
+        let app_path = (|| -> Option<String> {
+        let path = std::path::PathBuf::from(&app_path);
+        let path = path.parent()?.parent()?.parent()?;
+        let extension = path.extension()?.to_str()?;
+        match extension == "app" {
+            true => Some(path.as_os_str().to_str()?.to_string()),
+            false => None,
+        }
+    })()
+        .unwrap_or(app_path);
+
+    Ok(AutoLaunchBuilder::new()
+        .set_app_name(app_name)
+        .set_app_path(&app_path)
+        .build()?)
 }

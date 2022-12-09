@@ -3300,6 +3300,7 @@ dependencies = [
  "auto-launch",
  "awc",
  "bytestring",
+ "dunce",
  "futures-util",
  "log",
  "log4rs",

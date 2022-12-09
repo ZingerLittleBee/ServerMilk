@@ -11,6 +11,7 @@ const isEditing = ref(false)
 
 let pre: Ref<Preference> = ref({})
 let setPre: Function
+let setEnableAutoLaunch: Function
 
 const port = ref()
 
@@ -22,12 +23,13 @@ onMounted(async () => {
   const preference = await usePreference()
   pre.value = preference[0].value
   setPre = preference[1]
+  setEnableAutoLaunch = preference[2]
   port.value = pre.value.port
   appVersion.value = await getVersion()
 })
 
 const handleLaunchChange = (e: boolean) => {
-  setPre('isEnableAutoLaunch', e)
+  setEnableAutoLaunch(e)
 }
 
 const portError = reactive({
