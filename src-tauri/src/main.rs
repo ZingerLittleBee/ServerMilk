@@ -72,6 +72,7 @@ fn main() {
                     height: 360.0,
                 }))
                 .unwrap();
+            main_window.center().unwrap();
             main_window.set_resizable(false).unwrap();
             Ok(())
         })
@@ -85,12 +86,12 @@ fn init_launch() -> Result<AutoLaunch> {
     let app_name = app_exe
         .file_stem()
         .and_then(|f| f.to_str())
-        .ok_or(anyhow!("failed to get file stem"))?;
+        .ok_or_else(|| anyhow!("failed to get file stem"))?;
 
     let app_path = app_exe
         .as_os_str()
         .to_str()
-        .ok_or(anyhow!("failed to get app_path"))?
+        .ok_or_else(|| anyhow!("failed to get app_path"))?
         .to_string();
 
     #[cfg(target_os = "windows")]
