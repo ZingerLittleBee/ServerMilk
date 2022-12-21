@@ -1,8 +1,5 @@
 #[cfg(target_os = "linux")]
-use std::{
-    collections::HashMap,
-    sync::{Arc, RwLock},
-};
+use std::collections::HashMap;
 #[cfg(not(target_os = "windows"))]
 use systemstat::{Platform, System as Systemstat};
 
@@ -25,72 +22,26 @@ pub struct SystemInfo {
     sys: System,
     #[cfg(target_os = "linux")]
     sector_size_map: HashMap<String, u16>,
-    #[cfg(target_os = "linux")]
-    disk_usage_map: Arc<RwLock<HashMap<String, DiskIO>>>,
 
-    #[cfg(target_os = "macos")]
+    #[cfg(target_os = "linux")]
+    last_disk_io: DiskIO,
+
+    #[cfg(not(target_os = "windows"))]
     systemstat: Systemstat,
 }
 
 impl SystemInfo {
     pub fn new() -> Self {
-        #[cfg(target_os = "linux")]
-        let disk_usage_map = Arc::new(RwLock::new(HashMap::<String, DiskIO>::new()));
-        #[cfg(target_os = "linux")]
-        SystemInfo::sector_thread(disk_usage_map.clone());
         SystemInfo {
             sys: System::new_all(),
             #[cfg(target_os = "linux")]
             sector_size_map: SystemInfo::init_sector_size(),
             #[cfg(target_os = "linux")]
-            disk_usage_map,
+            last_disk_io: DiskIO::default(),
 
-            #[cfg(target_os = "macos")]
+            #[cfg(not(target_os = "windows"))]
             systemstat: Systemstat::new(),
         }
-    }
-
-    #[cfg(target_os = "linux")]
-    fn sector_thread(disk_usage_map: Arc<RwLock<HashMap<String, DiskIO>>>) {
-        use std::{thread, time::Instant};
-
-        use systemstat::Duration;
-
-        use crate::model::disk::SectorIncrease;
-
-        thread::spawn(move || {
-            let systemstat = Systemstat::new();
-            let mut pre_time = Instant::now();
-            loop {
-                if Instant::now() - pre_time >= Duration::from_secs(1) {
-                    let mut map = disk_usage_map.write().unwrap();
-                    systemstat
-                        .block_device_statistics()
-                        .unwrap()
-                        .values()
-                        .for_each(|x| {
-                            let mut sector_increase = SectorIncrease::default();
-                            if let Some(disk_usage) = map.get_mut(&x.name) {
-                                sector_increase.read =
-                                    x.read_sectors.wrapping_sub(disk_usage.total_read as usize);
-                                sector_increase.write = x
-                                    .write_sectors
-                                    .wrapping_sub(disk_usage.total_write as usize);
-                            }
-                            map.insert(
-                                x.name.clone(),
-                                DiskIO {
-                                    read: sector_increase.read as u64,
-                                    write: sector_increase.write as u64,
-                                    total_read: x.read_sectors as u64,
-                                    total_write: x.write_sectors as u64,
-                                },
-                            );
-                        });
-                    pre_time = Instant::now();
-                }
-            }
-        });
     }
 
     pub fn get_cpu_usage(&mut self) -> f32 {
@@ -205,17 +156,27 @@ impl SystemInfo {
     }
 
     #[cfg(target_os = "linux")]
-    pub fn get_disk_io(&self) -> DiskIO {
-        let mut total_disk_usage: DiskIO = Default::default();
-        let map = self.disk_usage_map.read().unwrap();
-        map.iter().for_each(|(key, disk_usage)| {
-            let sector_size = *self.sector_size_map.get(key).unwrap_or(&512) as u64;
-            total_disk_usage.read += disk_usage.read * sector_size;
-            total_disk_usage.write += disk_usage.write * sector_size;
-            total_disk_usage.total_read += disk_usage.total_read * sector_size;
-            total_disk_usage.total_write += disk_usage.total_write * sector_size;
-        });
-        total_disk_usage
+    pub fn get_disk_io(&mut self) -> DiskIO {
+        let mut total_read = 0;
+        let mut total_write = 0;
+        self.systemstat
+            .block_device_statistics()
+            .unwrap()
+            .values()
+            .for_each(|x| {
+                let sector_size = *self.sector_size_map.get(&x.name).unwrap_or(&512) as u64;
+                total_read += (x.read_sectors as u64) * sector_size;
+                total_write += (x.write_sectors as u64) * sector_size;
+            });
+        let mut disk_usage: DiskIO = Default::default();
+        if self.last_disk_io.total_read > 0 {
+            disk_usage.read = total_read - self.last_disk_io.total_read;
+            disk_usage.write = total_write - self.last_disk_io.total_write;
+        }
+        disk_usage.total_read = total_read;
+        disk_usage.total_write = total_write;
+        self.last_disk_io = disk_usage.clone();
+        disk_usage
     }
 
     pub fn get_overview(&mut self) -> Overview {
