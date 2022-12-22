@@ -10,13 +10,13 @@ use anyhow::Result;
 use auto_launch::{AutoLaunch, AutoLaunchBuilder};
 use tauri::{LogicalSize, Manager, Size};
 
+
 use crate::command::{
     launch::{disable_auto_launch, enable_auto_launch, is_enable_auto_launch},
-    log::open_web_log,
+    log::{open_web_log, get_log_path},
     port::is_free_port,
     state::web_server_restart,
 };
-use crate::command::state::WebServerState;
 use crate::command::status::check_web_status;
 
 mod command;
@@ -39,7 +39,8 @@ fn main() {
             web_server_restart,
             open_web_log,
             is_free_port,
-            check_web_status
+            check_web_status,
+            get_log_path
         ])
         .system_tray(tray::menu())
         .on_system_tray_event(tray::handler)
@@ -52,15 +53,15 @@ fn main() {
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
-            let config_path = app
-                .path_resolver()
-                .app_config_dir()
-                .unwrap()
-                .join("settings.json");
-            let log_path = app.path_resolver().app_log_dir().unwrap().join("web.log");
-            let (srv, sys) = runner::web_runner(config_path, log_path);
-            let web_server_state = WebServerState::new((srv, sys));
-            app.manage(web_server_state);
+            // let config_path = app
+            //     .path_resolver()
+            //     .app_config_dir()
+            //     .unwrap()
+            //     .join("settings.json");
+            // let log_path = app.path_resolver().app_log_dir().unwrap().join("web.log");
+            // let (srv, sys) = runner::web_runner(config_path, log_path);
+            // let web_server_state = WebServerState::new((srv, sys));
+            // app.manage(web_server_state);
 
             app.manage(init_launch().unwrap());
 
