@@ -8,9 +8,9 @@ A desktop wrapper for [server_bee-backend](https://github.com/ZingerLittleBee/se
 
 Backend for iOS application named [ServerBee](https://apps.apple.com/us/app/serverbee/id6443553714)
 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/ZingerLittleBee/serverbee-desktop?style=flat-square)
-![GitHub last commit](https://img.shields.io/github/last-commit/ZingerLittleBee/serverbee-desktop?style=flat-square)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/ZingerLittleBee/serverbee-desktop/Release?style=flat-square)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/ZingerLittleBee/serverbee-desktop?style=for-the-badge)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/ZingerLittleBee/serverbee-desktop/release.yml?style=for-the-badge)
+![GitHub last commit](https://img.shields.io/github/last-commit/ZingerLittleBee/serverbee-desktop?style=for-the-badge)
 
 </div>
 
