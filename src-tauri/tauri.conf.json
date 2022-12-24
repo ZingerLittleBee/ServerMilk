@@ -1,6 +1,6 @@
 {
   "package": {
-    "productName": "serverbee",
+    "productName": "ServerMilk",
     "version": "1.0.1"
   },
   "build": {
@@ -98,7 +98,7 @@
         "fullscreen": false,
         "height": 360,
         "resizable": true,
-        "title": "serverbee",
+        "title": "ServerMilk",
         "width": 320,
         "titleBarStyle": "Transparent"
       }

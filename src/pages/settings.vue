@@ -213,7 +213,7 @@ const checkUpdate = () => useUpdater()
             variant="outline"
             size="small"
             @click="exitProcess"
-        >退出 ServerBee
+        >退出 ServerMilk
         </t-button
         >
       </div>
