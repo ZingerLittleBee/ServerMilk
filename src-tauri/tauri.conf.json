@@ -1,14 +1,14 @@
 {
+  "package": {
+    "productName": "serverbee",
+    "version": "1.0.1"
+  },
   "build": {
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build",
     "devPath": "http://localhost:1420",
     "distDir": "../dist",
     "withGlobalTauri": false
-  },
-  "package": {
-    "productName": "serverbee",
-    "version": "1.0.0"
   },
   "tauri": {
     "allowlist": {
@@ -104,8 +104,8 @@
       }
     ],
     "systemTray": {
-      "iconPath": "icons/icon.png",
-      "iconAsTemplate": false
+      "iconPath": "icons/mac-icon.ico",
+      "iconAsTemplate": true
     }
   }
 }
