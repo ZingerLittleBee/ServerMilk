@@ -25,5 +25,3 @@ dist-ssr
 
 # Local
 .history
-
-src-tauri/binaries
