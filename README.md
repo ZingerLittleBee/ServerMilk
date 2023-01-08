@@ -30,7 +30,7 @@ Backend for iOS application named [ServerBee](https://apps.apple.com/us/app/serv
 ### Quick Start
 
 ```bash
-$ git clone https://github.com/ZingerLittleBee/ServerMilk.git
+$ git clone --recursive https://github.com/ZingerLittleBee/ServerMilk.git
 $ cd ServerMilk
 $ pnpm i
 $ pnpm tauri build

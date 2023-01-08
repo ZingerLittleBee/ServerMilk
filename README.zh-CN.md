@@ -30,7 +30,7 @@ iOS 应用 [ServerBee](https://apps.apple.com/us/app/serverbee/id6443553714) 的
 ### 开始编译
 
 ```bash
-$ git clone https://github.com/ZingerLittleBee/ServerMilk.git
+$ git clone --recursive https://github.com/ZingerLittleBee/ServerMilk.git
 $ cd ServerMilk
 $ pnpm i
 $ pnpm tauri build

@@ -151,7 +151,7 @@ async function main() {
     }
 
     console.log(`更新 submodule 仓库`)
-    await execa('git', ['pull'], {
+    await execa('git', ['pull', 'origin', 'main'], {
         cwd: workDir
     })
 
