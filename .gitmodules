@@ -1,0 +1,3 @@
+[submodule "src-tauri/binaries/server_bee-backend"]
+	path = src-tauri/binaries/server_bee-backend
+	url = https://github.com/ZingerLittleBee/server_bee-backend.git

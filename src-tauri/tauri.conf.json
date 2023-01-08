@@ -1,14 +1,14 @@
 {
+  "package": {
+    "productName": "ServerMilk",
+    "version": "1.0.1"
+  },
   "build": {
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build",
     "devPath": "http://localhost:1420",
     "distDir": "../dist",
     "withGlobalTauri": false
-  },
-  "package": {
-    "productName": "serverbee",
-    "version": "1.0.0"
   },
   "tauri": {
     "allowlist": {
@@ -25,6 +25,25 @@
         "all": true,
         "open": true,
         "save": true
+      },
+      "shell": {
+        "sidecar": true,
+        "scope": [
+          {
+            "name": "binaries/serverbee-web",
+            "sidecar": true,
+            "args": [
+              "-p",
+              {
+                "validator": "\\S+"
+              },
+              "-l",
+              {
+                "validator": "\\S+"
+              }
+            ]
+          }
+        ]
       }
     },
     "bundle": {
@@ -34,7 +53,9 @@
       "deb": {
         "depends": []
       },
-      "externalBin": [],
+      "externalBin": [
+        "binaries/serverbee-web"
+      ],
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
@@ -77,14 +98,14 @@
         "fullscreen": false,
         "height": 360,
         "resizable": true,
-        "title": "serverbee",
+        "title": "ServerMilk",
         "width": 320,
         "titleBarStyle": "Transparent"
       }
     ],
     "systemTray": {
-      "iconPath": "icons/icon.png",
-      "iconAsTemplate": false
+      "iconPath": "icons/mac-icon.ico",
+      "iconAsTemplate": true
     }
   }
 }

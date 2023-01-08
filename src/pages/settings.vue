@@ -6,6 +6,7 @@ import {CheckCircleIcon, ErrorCircleIcon, JumpIcon, RefreshIcon} from 'tdesign-i
 import {onMounted, reactive, Ref, ref} from 'vue'
 import usePreference, {Preference} from '../hooks/usePreference'
 import useUpdater from '../hooks/useUpdater'
+import useCommander from "../hooks/useCommander";
 
 const isEditing = ref(false)
 
@@ -19,13 +20,18 @@ const isRunning = ref(true)
 
 const appVersion = ref()
 
+let start, restart: (port: number) => Promise<void>, stop
+
 onMounted(async () => {
+  ({start, restart, stop} = await useCommander())
   const preference = await usePreference()
   pre.value = preference[0].value
   setPre = preference[1]
   setEnableAutoLaunch = preference[2]
   port.value = pre.value.port
   appVersion.value = await getVersion()
+
+  await start(port.value)
 })
 
 const handleLaunchChange = (e: boolean) => {
@@ -37,12 +43,14 @@ const portError = reactive({
   msg: ''
 })
 
+const checkPort = async (port: number): Promise<boolean> => invoke('is_free_port', {port: port})
+
 const changePort = async () => {
   if (port.value >= 0 && port.value <= 65535) {
-    if (await invoke('is_free_port', {port: port.value})) {
+    if (await checkPort(port.value)) {
       isEditing.value = false
+      await restart(port.value)
       await setPre('port', port.value)
-      invoke('web_server_restart')
     } else {
       portError.isErr = true
       portError.msg = '端口已被占用, 请更换其他端口'
@@ -205,7 +213,7 @@ const checkUpdate = () => useUpdater()
             variant="outline"
             size="small"
             @click="exitProcess"
-        >退出 ServerBee
+        >退出 ServerMilk
         </t-button
         >
       </div>
