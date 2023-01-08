@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - v[0-9]+.*
+    branches:
+      - fix/1.0.1/action
 
 jobs:
   create-release:
@@ -64,6 +66,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       - name: install app dependencies and build it
         run: pnpm i && pnpm tauri build
       - uses: tauri-apps/tauri-action@v0
