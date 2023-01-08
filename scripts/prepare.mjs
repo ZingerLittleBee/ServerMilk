@@ -157,7 +157,7 @@ async function main() {
     })
     const newReleasePath = `${binariesDir}/serverbee-web-${targetTriple}${extension}`
     renameSync(
-        releasePath,
+        `${releasePath}${extension}`,
         newReleasePath
     )
     console.log(`submodule: ${newReleasePath} 构建完成`)
