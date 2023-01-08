@@ -150,11 +150,6 @@ async function main() {
         extension = '.exe'
     }
 
-    console.log(`更新 submodule 仓库`)
-    await execa('git', ['pull', 'origin', 'main'], {
-        cwd: workDir
-    })
-
     console.log('构建 submodule 仓库')
     console.log('首次构建可能需要较长时间, 请耐心等待')
     await execa('cargo', ['build', '--release'], {
@@ -162,7 +157,7 @@ async function main() {
     })
     const newReleasePath = `${binariesDir}/serverbee-web-${targetTriple}${extension}`
     renameSync(
-        releasePath,
+        `${releasePath}${extension}`,
         newReleasePath
     )
     console.log(`submodule: ${newReleasePath} 构建完成`)

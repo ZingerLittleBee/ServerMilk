@@ -5,6 +5,9 @@ on:
     tags:
       - v[0-9]+.*
 
+env:
+  TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+
 jobs:
   create-release:
     runs-on: ubuntu-20.04
@@ -48,6 +51,8 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - name: setup node
         uses: actions/setup-node@v1
         with:
@@ -69,7 +74,6 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
         with:
           releaseId: ${{ needs.create-release.outputs.release_id }}
 
