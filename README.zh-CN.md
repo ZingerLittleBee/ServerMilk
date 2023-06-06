@@ -32,6 +32,7 @@ iOS 应用 [ServerBee](https://apps.apple.com/us/app/serverbee/id6443553714) 的
 ```bash
 $ git clone --recursive https://github.com/ZingerLittleBee/ServerMilk.git
 $ cd ServerMilk
+$ git submodule update --remote
 $ pnpm i
 $ pnpm tauri build
 ```

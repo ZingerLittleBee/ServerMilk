@@ -32,6 +32,7 @@ Backend for iOS application named [ServerBee](https://apps.apple.com/us/app/serv
 ```bash
 $ git clone --recursive https://github.com/ZingerLittleBee/ServerMilk.git
 $ cd ServerMilk
+$ git submodule update --remote
 $ pnpm i
 $ pnpm tauri build
 ```
