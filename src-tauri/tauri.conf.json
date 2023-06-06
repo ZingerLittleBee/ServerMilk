@@ -21,6 +21,11 @@
         "readDir": true,
         "writeFile": true
       },
+      "http": {
+          "all": true,
+          "request": true,
+          "scope": ["http://**"]
+      },
       "dialog": {
         "all": true,
         "open": true,
@@ -96,7 +101,7 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 360,
+        "height": 430,
         "resizable": true,
         "title": "ServerMilk",
         "width": 320,

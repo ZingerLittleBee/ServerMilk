@@ -7,6 +7,10 @@ import {onMounted, reactive, Ref, ref} from 'vue'
 import usePreference, {Preference} from '../hooks/usePreference'
 import useUpdater from '../hooks/useUpdater'
 import useCommander from "../hooks/useCommander";
+import {Body, fetch, ResponseType} from '@tauri-apps/api/http';
+import {PhEyeSlash, PhEye} from "@phosphor-icons/vue";
+import {MessagePlugin} from "tdesign-vue-next";
+import {randomString} from "../utils/util";
 
 const isEditing = ref(false)
 
@@ -91,6 +95,61 @@ const refreshStatus = async () => {
 }
 
 const checkUpdate = () => useUpdater()
+
+const apiKey = ref('')
+const apiKeyVisible = ref(false)
+const apiKeyIsEditing = ref(false)
+const newApiKey = ref<string>('')
+
+const handleViewKey = async () => {
+  if (apiKeyVisible.value) {
+    apiKeyVisible.value = false
+    return;
+  }
+  if (pre.value.port === undefined) {
+    await MessagePlugin.warning('请先设置端口号')
+    return;
+  }
+  const response = await fetch<string>(`http://localhost:${pre.value.port}/local/token/view`, {
+    method: 'GET',
+    timeout: 30,
+    responseType: ResponseType.Text,
+  });
+  if (response.data === '') {
+    apiKey.value = '暂无密钥'
+  } else {
+    apiKey.value = response.data
+  }
+  apiKeyVisible.value = true
+}
+
+const changeApiKey = async () => {
+  if (newApiKey.value === '') {
+    await MessagePlugin.warning('密钥不能为空')
+    return;
+  }
+  const response = await fetch<{success: boolean}>(`http://localhost:${pre.value.port}/local/token/rest`, {
+    method: 'POST',
+    timeout: 30,
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: Body.form({
+      token: newApiKey.value
+        }),
+  });
+  if (response.data.success) {
+    await MessagePlugin.success('密钥修改成功')
+    apiKey.value = newApiKey.value
+    apiKeyIsEditing.value = false
+  } else {
+    await MessagePlugin.error('密钥修改失败')
+  }
+}
+
+const genKey = () => {
+  newApiKey.value = randomString(16)
+}
 </script>
 
 <template>
@@ -142,13 +201,12 @@ const checkUpdate = () => useUpdater()
         <div v-else class="content__right--port">
           <t-input-number
               v-model="port"
-              autoWidth
               autofocus
-              clearable
               min="0"
               max="65535"
               theme="normal"
               size="small"
+              :style="{ width: '60px' }"
           />
           <t-button
               size="small"
@@ -172,10 +230,74 @@ const checkUpdate = () => useUpdater()
       <div v-if="portError.isErr" class="content__right">
         <span class="content__right--error">{{ portError.msg }}</span>
       </div>
+      <div class="content__left"><p>访问密钥:</p></div>
+      <div class="content__right">
+        <div v-if="!apiKeyIsEditing" class="content__right--port">
+          <div v-if="apiKeyVisible">{{apiKey}}</div>
+          <t-button
+              size="small"
+              theme="primary"
+              variant="text"
+              class="p-0"
+              @click="handleViewKey"
+          >
+            <PhEyeSlash v-if="!apiKeyVisible" :size="20" />
+            <PhEye v-if="apiKeyVisible" :size="20" />
+          </t-button
+          >
+        </div>
+        <div v-else class="content__right--newApiKey">
+          <t-input
+              v-model="newApiKey"
+              autofocus
+              theme="normal"
+              size="small"
+          />
+        </div>
+      </div>
+      <div v-if="apiKeyVisible" class="content__left"></div>
+      <div v-if="apiKeyVisible" class="content__right">
+        <t-button
+            v-if="!apiKeyIsEditing"
+            size="small"
+            theme="primary"
+            variant="text"
+            @click="apiKeyIsEditing = !apiKeyIsEditing"
+        >编辑
+        </t-button
+        >
+        <t-button
+            v-if="apiKeyIsEditing"
+            size="small"
+            theme="primary"
+            variant="text"
+            @click="changeApiKey"
+        >确定
+        </t-button
+        >
+        <t-button
+            v-if="apiKeyIsEditing"
+            size="small"
+            theme="primary"
+            variant="text"
+            @click="() => apiKeyIsEditing = false"
+        >取消
+        </t-button
+        >
+        <t-button
+            v-if="apiKeyIsEditing"
+            size="small"
+            theme="primary"
+            variant="text"
+            @click="genKey"
+        >随机生成
+        </t-button
+        >
+      </div>
       <div class="content__left"><p>如何使用:</p></div>
       <div class="content__right">
         <t-link theme="primary" hover="color"
-                href="https://serverbee-website-4ee38867631e3f-1253263310.tcloudbaseapp.com/usage/" target="_blank"
+                href="https://docs.serverbee.app" target="_blank"
         >
           使用教程
           <jump-icon slot="suffixIcon"/>
@@ -226,14 +348,14 @@ const checkUpdate = () => useUpdater()
   @apply flex flex-col items-center justify-center h-full w-full;
 
   .content-wrapper {
-    @apply grid grid-cols-3 gap-4 gap-y-1 justify-center items-center;
+    @apply w-full grid grid-cols-3 gap-4 gap-y-1 justify-center items-center;
 
     .content__left {
       @apply justify-self-end;
     }
 
     .content__right {
-      @apply col-span-2 w-36;
+      @apply col-span-2;
 
       .content__right--status {
         @apply flex flex-row items-center justify-start;
@@ -246,6 +368,10 @@ const checkUpdate = () => useUpdater()
       }
 
       .content__right--port {
+        @apply flex items-center;
+      }
+
+      .content__right--newApiKey {
         @apply flex items-center;
       }
 
