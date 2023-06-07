@@ -93,7 +93,7 @@
     "updater": {
       "active": true,
       "endpoints": [
-        "https://serverbee-1253263310.cos.ap-shanghai.myqcloud.com/desktop/updater.json"
+        "https://db.serverbee.app/desktop/latest.json"
       ],
       "dialog": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM2RDU5RTkwQkI1NzFENDQKUldSRUhWZTdrSjdWTnMxVEg1Yjh5eCt1M2JCNytIdVNuN3duVm9LcUoveXdyTmlnU21ZTFEyejUK"
