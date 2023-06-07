@@ -1,6 +1,6 @@
 [package]
 name = "server_milk"
-version = "1.1.0"
+version = "1.2.5"
 description = "A desktop program for iOS application named ServerBee"
 authors = ["ZingerLittleBee"]
 license = ""

@@ -50,7 +50,7 @@ fn main() {
             main_window
                 .set_size(Size::Logical(LogicalSize {
                     width: 320.0,
-                    height: 360.0,
+                    height: 430.0,
                 }))
                 .unwrap();
             main_window.center().unwrap();
