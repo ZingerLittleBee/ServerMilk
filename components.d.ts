@@ -7,13 +7,11 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
-    TAlert: typeof import('tdesign-vue-next')['Alert']
     TButton: typeof import('tdesign-vue-next')['Button']
     TCheckbox: typeof import('tdesign-vue-next')['Checkbox']
     TInput: typeof import('tdesign-vue-next')['Input']
     TInputNumber: typeof import('tdesign-vue-next')['InputNumber']
     TLink: typeof import('tdesign-vue-next')['Link']
-    TMessage: typeof import('tdesign-vue-next')['Message']
     TTag: typeof import('tdesign-vue-next')['Tag']
   }
 }

@@ -94,7 +94,7 @@ const refreshStatus = async () => {
   }, 1000)
 }
 
-const checkUpdate = () => useUpdater()
+const checkUpdate = () => useUpdater(true)
 
 const apiKey = ref('')
 const apiKeyVisible = ref(false)
@@ -134,7 +134,7 @@ const changeApiKey = async () => {
     headers: {
       'Content-Type': 'application/json'
     },
-    body: Body.form({
+    body: Body.json({
       token: newApiKey.value
         }),
   });
@@ -143,7 +143,7 @@ const changeApiKey = async () => {
     apiKey.value = newApiKey.value
     apiKeyIsEditing.value = false
   } else {
-    await MessagePlugin.error('密钥修改失败')
+    await MessagePlugin.error(`密钥修改失败, 错误码: ${response.status}`)
   }
 }
 

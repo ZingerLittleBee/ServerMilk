@@ -6,7 +6,6 @@ import { MessagePlugin } from 'tdesign-vue-next'
 export default async function useUpdater(needMsg = false) {
 	try {
 		const { shouldUpdate, manifest } = await checkUpdate()
-
 		if (shouldUpdate) {
 			const isUpdate = await ask('是否更新?', {
 				title: `发现新版本: ${manifest?.version}`,
@@ -20,10 +19,10 @@ export default async function useUpdater(needMsg = false) {
 			}
 		} else {
 			if (needMsg) {
-				MessagePlugin.info('已是最新版本', 1000)
+				await MessagePlugin.info('已是最新版本', 1000)
 			}
 		}
 	} catch (error) {
-		console.error(error)
+		await MessagePlugin.error('检查更新失败', 1000)
 	}
 }

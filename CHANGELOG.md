@@ -1,3 +1,9 @@
+## `1.2.5` (2023-06-07)
+
+### Features
+- Add auth token action
+- Update server_bee-backend to 1.2.5
+
 ## `1.2.4` (2023-06-06)
 
 ### Features
