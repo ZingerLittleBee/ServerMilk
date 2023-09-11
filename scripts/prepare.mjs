@@ -154,13 +154,13 @@ async function main() {
     console.log('构建 submodule 仓库')
     console.log('首次构建可能需要较长时间, 请耐心等待')
 
-    console.log('当前执行命令: pnpm install')
-    await execa('pnpm', ['install'], {
+    console.log('当前执行命令: npm install')
+    await execa('npm', ['install'], {
         cwd: viewWorkDir
     })
 
-    console.log('当前执行命令: pnpm build')
-    await execa('pnpm', ['build'], {
+    console.log('当前执行命令: npm run build')
+    await execa('npm', ['build'], {
         cwd: viewWorkDir
     })
 
