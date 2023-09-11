@@ -13,8 +13,7 @@ pub fn get_log_path(app_handle: tauri::AppHandle) -> String {
     app_handle
         .path_resolver()
         .app_log_dir()
-        .unwrap()
-        .join("web.log").display().to_string()
+        .unwrap().display().to_string()
 }
 
 fn log_path(app_handle: tauri::AppHandle) -> PathBuf {

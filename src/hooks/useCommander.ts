@@ -13,7 +13,10 @@ export default async function useCommander() {
 
     const start = async (port: number) => {
         const command = Command.sidecar('binaries/serverbee-web', ['-p', port.toString(), '-l', logPath])
-        process = await command.spawn()
+        console.log('port', port.toString())
+        console.log('logPath', logPath)
+        console.log(await command.execute())
+        // process = await command.spawn()
     }
 
     const restart = async (port: number) => {

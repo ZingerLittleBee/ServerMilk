@@ -7,7 +7,7 @@ import {onMounted, reactive, Ref, ref} from 'vue'
 import usePreference, {Preference} from '../hooks/usePreference'
 import useUpdater from '../hooks/useUpdater'
 import useCommander from "../hooks/useCommander";
-import {Body, fetch, ResponseType} from '@tauri-apps/api/http';
+import {Body, fetch} from '@tauri-apps/api/http';
 import {PhEyeSlash, PhEye} from "@phosphor-icons/vue";
 import {MessagePlugin} from "tdesign-vue-next";
 import {randomString} from "../utils/util";
@@ -75,9 +75,6 @@ const openLog = async () => {
   invoke('open_web_log')
 }
 
-const openDocs = async () => {
-  invoke('open_web_log')
-}
 const exitProcess = () => {
   exit(0)
 }
@@ -110,17 +107,16 @@ const handleViewKey = async () => {
     await MessagePlugin.warning('请先设置端口号')
     return;
   }
-  const response = await fetch<string>(`http://localhost:${pre.value.port}/local/token/view`, {
-    method: 'GET',
-    timeout: 30,
-    responseType: ResponseType.Text,
-  });
-  if (response.data === '') {
-    apiKey.value = '暂无密钥'
-  } else {
-    apiKey.value = response.data
+  try {
+    const resp = await fetch<{ success: boolean, data: { token: string } }>(`http://localhost:${pre.value.port}/local/config/app`, {
+      method: 'GET',
+      timeout: 30
+    });
+    apiKey.value = resp.data.data.token
+    apiKeyVisible.value = true
+  } catch (e) {
+    await MessagePlugin.warning('获取密钥失败，请检查服务是否正常')
   }
-  apiKeyVisible.value = true
 }
 
 const changeApiKey = async () => {
@@ -128,7 +124,7 @@ const changeApiKey = async () => {
     await MessagePlugin.warning('密钥不能为空')
     return;
   }
-  const response = await fetch<{success: boolean}>(`http://localhost:${pre.value.port}/local/token/rest`, {
+  const response = await fetch<{success: boolean}>(`http://localhost:${pre.value.port}/local/config/app`, {
     method: 'POST',
     timeout: 30,
     headers: {
@@ -300,6 +296,15 @@ const genKey = () => {
                 href="https://docs.serverbee.app" target="_blank"
         >
           使用教程
+          <jump-icon slot="suffixIcon"/>
+        </t-link>
+      </div>
+      <div class="content__left"><p>Web:</p></div>
+      <div class="content__right">
+        <t-link theme="primary" hover="color"
+                :href="`http://localhost:${port}`" target="_blank"
+        >
+          Dashboard
           <jump-icon slot="suffixIcon"/>
         </t-link>
       </div>
