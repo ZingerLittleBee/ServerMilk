@@ -1,6 +1,6 @@
-import {getAll, set as settingsSet} from 'tauri-settings'
-import {ref} from 'vue'
-import {invoke} from "@tauri-apps/api";
+import { getAll, set as settingsSet } from 'tauri-settings'
+import { ref } from 'vue'
+import { invoke } from '@tauri-apps/api'
 
 export type Preference = {
     theme?: 'dark' | 'light'
@@ -13,7 +13,7 @@ export default async function usePreference() {
         port: 9527,
         isEnableAutoLaunch: true
     })
-    const {settings} = await getAll<Preference>()
+    const { settings } = await getAll<Preference>()
     preference.value = {
         ...preference.value,
         ...(settings as Preference)
@@ -30,7 +30,9 @@ export default async function usePreference() {
     async function checkStatus() {
         const isEnableAutoLaunch = await invoke('is_enable_auto_launch')
         if (isEnableAutoLaunch !== preference.value.isEnableAutoLaunch) {
-            preference.value.isEnableAutoLaunch ? await invoke('enable_auto_launch') : await invoke('disable_auto_launch')
+            preference.value.isEnableAutoLaunch
+                ? await invoke('enable_auto_launch')
+                : await invoke('disable_auto_launch')
         }
     }
 
@@ -42,9 +44,7 @@ export default async function usePreference() {
         preference.value[key] = value
     }
 
-    async function setEnableAutoLaunch(
-        enable: boolean
-    ) {
+    async function setEnableAutoLaunch(enable: boolean) {
         await settingsSet('isEnableAutoLaunch', enable)
         preference.value.isEnableAutoLaunch = enable
         await checkStatus()

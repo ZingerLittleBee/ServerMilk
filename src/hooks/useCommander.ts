@@ -1,8 +1,7 @@
-import {Child, Command} from "@tauri-apps/api/shell";
-import {invoke} from "@tauri-apps/api";
+import { Child, Command } from '@tauri-apps/api/shell'
+import { invoke } from '@tauri-apps/api'
 
 export default async function useCommander() {
-
     let process: Child | null
 
     const logPath = await invoke<string>('get_log_path')
@@ -12,7 +11,12 @@ export default async function useCommander() {
     }
 
     const start = async (port: number) => {
-        const command = Command.sidecar('binaries/serverbee-web', ['-p', port.toString(), '-l', logPath])
+        const command = Command.sidecar('binaries/serverbee-web', [
+            '-p',
+            port.toString(),
+            '-l',
+            logPath
+        ])
         console.log('port', port.toString())
         console.log('logPath', logPath)
         console.log(await command.execute())
