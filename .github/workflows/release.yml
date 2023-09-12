@@ -60,15 +60,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
 
-      - name: install dependencies (aarch64-apple-darwin)
-        if: matrix.platform.os == 'aarch64-apple-darwin'
+      - name: Install dependencies (aarch64-apple-darwin)
+        if: matrix.platform.rust_target == 'aarch64-apple-darwin'
         run: |
           pnpm i --ignore-scripts
           node scripts/prepare.mjs --target aarch64-apple-darwin
 
-      - name: install dependencies
-        if: matrix.platform.os != 'aarch64-apple-darwin'
+      - name: Install dependencies
+        if: matrix.platform.rust_target != 'aarch64-apple-darwin'
         run: pnpm i
+
+      - name: Exclude submodules
+        if: matrix.platform.os == 'windows-latest'
+        run: rm -rf ./src-tauri/binaries/server_bee-backend
 
       - uses: JonasKruckenberg/tauri-build@v1.4.0
         id: tauri_build
