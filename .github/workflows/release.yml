@@ -72,7 +72,7 @@ jobs:
 
       - name: Exclude submodules
         if: matrix.platform.os == 'windows-latest'
-        run: rm -rf ./src-tauri/binaries/server_bee-backend
+        run: Remove-Item -Path ./src-tauri/binaries/server_bee-backend -Recurse -Force
 
       - uses: JonasKruckenberg/tauri-build@v1.4.0
         id: tauri_build
