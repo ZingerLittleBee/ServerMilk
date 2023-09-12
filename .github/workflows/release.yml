@@ -63,6 +63,9 @@ jobs:
       - name: install dependencies
         run: pnpm i
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - uses: JonasKruckenberg/tauri-build@v1.2.2
         id: tauri_build
         with:
