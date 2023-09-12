@@ -97,6 +97,9 @@ jobs:
           path: release
       - name: Display structure of Upload files
         run: ls -R
+      - name: Recursively move all files to parent directory
+        run: |
+          find release -type f -exec mv {} release \;
       - uses: elementemerald/r2-upload-action@v1.1.2
         with:
           r2-account-id: ${{ secrets.R2_ACCOUNT_ID }}
@@ -118,10 +121,11 @@ jobs:
           name: artifacts
           path: artifacts
       # And create a release with the artifacts attached
-      - name: Create release'
+      - name: Create release
         uses: softprops/action-gh-release@master
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
           draft: false
+          prerelease: true
           files: ./artifacts/**/*
