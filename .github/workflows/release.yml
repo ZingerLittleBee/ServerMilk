@@ -33,10 +33,15 @@ jobs:
         with:
           submodules: recursive
 
-      - name: setup node
+      - name: Setup node
         uses: actions/setup-node@v3
         with:
           node-version: 18
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
 
       - name: Setup Rust
         uses: actions-rs/toolchain@v1
@@ -49,7 +54,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: install dependencies (ubuntu only)
+      - name: Install dependencies (ubuntu only)
         if: matrix.platform.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
@@ -59,7 +64,7 @@ jobs:
         uses: mxschmitt/action-tmate@v3
 
       - name: install dependencies
-        run: npm i
+        run: pnpm i
 
       - uses: JonasKruckenberg/tauri-build@v1.2.2
         id: tauri_build
@@ -105,7 +110,7 @@ jobs:
           name: artifacts
           path: artifacts
       # And create a release with the artifacts attached
-      - name: 'create release'
+      - name: Create release'
         uses: softprops/action-gh-release@master
         env:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
