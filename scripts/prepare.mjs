@@ -1,8 +1,10 @@
+#!/usr/bin/env node
+
 import {execa} from 'execa'
 
 import {renameSync} from "fs"
 import {resolve} from 'path'
-
+import minimist from 'minimist'
 
 /// Download from GitHub and then unzip
 
@@ -138,12 +140,14 @@ const getTargetTriple = async () => {
 
 const binariesDir = resolve('src-tauri', 'binaries')
 const workDir = resolve(binariesDir, 'server_bee-backend')
-const releasePath = resolve(workDir, 'target', 'release', 'serverbee-web')
-
+const viewWorkDir = resolve(workDir, 'view')
 
 async function main() {
-    let targetTriple = await getTargetTriple()
-    console.log(`当前系统三元组: ${targetTriple}`)
+
+    const args = minimist(process.argv)
+
+    const targetTriple = args.target ? args.target : await getTargetTriple()
+    console.log(`构建三元组: ${targetTriple}`)
 
     let extension = ''
     if (process.platform === 'win32') {
@@ -152,9 +156,22 @@ async function main() {
 
     console.log('构建 submodule 仓库')
     console.log('首次构建可能需要较长时间, 请耐心等待')
-    await execa('cargo', ['build', '--release'], {
+
+    console.log('当前执行命令: pnpm install')
+    await execa('pnpm', ['install'], {
+        cwd: viewWorkDir
+    })
+
+    console.log('当前执行命令: pnpm build')
+    await execa('pnpm', ['build'], {
+        cwd: viewWorkDir
+    })
+
+    console.log('当前执行命令: cargo build --release')
+    await execa('cargo', ['build', '--release', '--target', targetTriple], {
         cwd: workDir
     })
+    const releasePath = resolve(workDir, 'target', targetTriple, 'release', 'serverbee-web')
     const newReleasePath = `${binariesDir}/serverbee-web-${targetTriple}${extension}`
     renameSync(
         `${releasePath}${extension}`,
