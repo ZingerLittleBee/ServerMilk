@@ -26,17 +26,17 @@ const appVersion = ref()
 
 let start, restart: (port: number) => Promise<void>, stop
 
-onMounted(async () => {
-  ({start, restart, stop} = await useCommander())
-  const preference = await usePreference()
-  pre.value = preference[0].value
-  setPre = preference[1]
-  setEnableAutoLaunch = preference[2]
-  port.value = pre.value.port
-  appVersion.value = await getVersion()
-
-  await start(port.value)
-})
+// onMounted(async () => {
+//   ({start, restart, stop} = await useCommander())
+//   const preference = await usePreference()
+//   pre.value = preference[0].value
+//   setPre = preference[1]
+//   setEnableAutoLaunch = preference[2]
+//   port.value = pre.value.port
+//   appVersion.value = await getVersion()
+//
+//   await start(port.value)
+// })
 
 const handleLaunchChange = (e: boolean) => {
   setEnableAutoLaunch(e)

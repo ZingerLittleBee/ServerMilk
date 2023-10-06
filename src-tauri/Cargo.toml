@@ -21,6 +21,11 @@ anyhow = "1.0"
 port-selector = "0.1.6"
 reqwest = { version = "0.11", features = ["json"] }
 dunce = "1.0.3"
+tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+window-shadows = "0.2.1"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+cocoa = "0.25.0"
 
 [features]
 # by default Tauri runs in production mode

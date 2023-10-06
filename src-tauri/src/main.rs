@@ -8,7 +8,10 @@ use std::env::current_exe;
 use anyhow::anyhow;
 use anyhow::Result;
 use auto_launch::{AutoLaunch, AutoLaunchBuilder};
-use tauri::{LogicalSize, Manager, Size};
+use tauri::{LogicalSize, Size, WindowBuilder, WindowUrl};
+use tauri::api::process::{Command, CommandEvent};
+use tauri::utils::config::AppUrl;
+use window_shadows::set_shadow;
 
 
 use crate::command::{
@@ -17,12 +20,29 @@ use crate::command::{
     port::is_free_port,
 };
 use crate::command::status::check_web_status;
+use crate::ext::window::WindowExt;
 
 mod command;
 mod tray;
+mod ext;
 
 fn main() {
+    let (mut rx, mut child) = Command::new_sidecar("serverbee-web")
+        .expect("failed to create `serverbee-web` binary command")
+        .args(["--port", "9527"])
+        .spawn()
+        .expect("Failed to spawn sidecar");
+
+    // make sure ../dist exists
+    let mut context = tauri::generate_context!();
+    let url = format!("http://localhost:{}", 9527).parse().unwrap();
+    let window_url = WindowUrl::External(url);
+    // rewrite the config so the IPC is enabled on this URL
+    context.config_mut().build.dist_dir = AppUrl::Url(window_url.clone());
+    context.config_mut().build.dev_path = AppUrl::Url(window_url.clone());
+
     tauri::Builder::default()
+        .plugin(tauri_plugin_window_state::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             is_enable_auto_launch,
             enable_auto_launch,
@@ -38,26 +58,68 @@ fn main() {
             event.window().hide().unwrap();
             api.prevent_close();
         })
-        .setup(|app| {
+        .setup(move |app| {
             // don't show on the taskbar/springboard
-            #[cfg(target_os = "macos")]
-            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+            // #[cfg(target_os = "macos")]
+            // app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
-            app.manage(init_launch().unwrap());
+            // app.manage(init_launch().unwrap());
 
-            let main_window = app.get_window("main").unwrap();
+            let main_window = WindowBuilder::new(
+                app,
+                "main".to_string(),
+                if cfg!(dev) {
+                    Default::default()
+                } else {
+                    window_url
+                }
+            )
+                .build()?;
 
-            main_window
-                .set_size(Size::Logical(LogicalSize {
-                    width: 320.0,
-                    height: 480.0,
+            #[cfg(any(windows, target_os = "macos"))]
+            set_shadow(&main_window, true).unwrap();
+
+            main_window.set_transparent_titlebar(true);
+            main_window.set_size(Size::Logical(LogicalSize {
+                width: 1400.0,
+                height: 842.0,
+            })).unwrap();
+            main_window.set_min_size(
+                Some(Size::Logical(LogicalSize {
+                    width: 400.0,
+                    height: 200.0,
                 }))
-                .unwrap();
+            ).unwrap();
             main_window.center().unwrap();
-            main_window.set_resizable(false).unwrap();
+
+            #[cfg(target_os = "macos")]
+            main_window.eval(r#"
+                let newDiv = document.createElement('div');
+                newDiv.setAttribute('data-tauri-drag-region', '');
+                newDiv.style.height = '15px';
+                newDiv.style.width = '100%';
+                newDiv.style.position = 'absolute';
+                newDiv.style.top = '0';
+                newDiv.style.zIndex = '999';
+                document.body.prepend(newDiv);
+            "#).unwrap();
+
+            tauri::async_runtime::spawn(async move {
+                // read events such as stdout
+                while let Some(event) = rx.recv().await {
+                    if let CommandEvent::Stdout(line) = event {
+                        main_window
+                            .emit("message", Some(format!("'{}'", line)))
+                            .expect("failed to emit event");
+                        // write to stdin
+                        child.write("message from Rust\n".as_bytes()).unwrap();
+                    }
+                }
+            });
+
             Ok(())
         })
-        .run(tauri::generate_context!())
+        .run(context)
         .expect("error while running tauri application");
 }
 
