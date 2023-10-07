@@ -181,9 +181,9 @@ dependencies = [
 
 [[package]]
 name = "auto-launch"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5904a4d734f0235edf29aab320a14899f3e090446e594ff96508a6215f76f89c"
+checksum = "1f012b8cc0c850f34117ec8252a44418f2e34a2cf501de89e29b241ae5f79471"
 dependencies = [
  "dirs",
  "thiserror",
@@ -3025,7 +3025,6 @@ name = "server_milk"
 version = "2.0.0"
 dependencies = [
  "anyhow",
- "auto-launch",
  "cocoa 0.25.0",
  "dunce",
  "open",
@@ -3035,6 +3034,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tauri-plugin-autostart",
  "tauri-plugin-window-state",
  "window-shadows",
 ]
@@ -3472,6 +3472,19 @@ dependencies = [
  "syn 1.0.103",
  "tauri-codegen",
  "tauri-utils",
+]
+
+[[package]]
+name = "tauri-plugin-autostart"
+version = "0.0.0"
+source = "git+https://github.com/tauri-apps/plugins-workspace?branch=v1#9f27e6e4415ddf6c40f846d50c0d95c768cded77"
+dependencies = [
+ "auto-launch",
+ "log",
+ "serde",
+ "serde_json",
+ "tauri",
+ "thiserror",
 ]
 
 [[package]]

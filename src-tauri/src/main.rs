@@ -3,14 +3,10 @@ all(not(debug_assertions), target_os = "windows"),
 windows_subsystem = "windows"
 )]
 
-use std::env::current_exe;
-
-use anyhow::anyhow;
-use anyhow::Result;
-use auto_launch::{AutoLaunch, AutoLaunchBuilder};
 use tauri::{Manager, WindowUrl};
 use tauri::api::process::{Command, CommandEvent};
 use tauri::utils::config::AppUrl;
+use tauri_plugin_autostart::MacosLauncher;
 use window_shadows::set_shadow;
 
 
@@ -43,6 +39,7 @@ fn main() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec!["--flag1", "--flag2"])))
         .invoke_handler(tauri::generate_handler![
             is_enable_auto_launch,
             enable_auto_launch,
@@ -103,7 +100,7 @@ fn main() {
                     }
 
                     waitForElement('header', header => {
-                      header.style.paddingBottom = '15px';
+                      header.style.paddingBottom = '10px';
                       let firstChild = header.firstElementChild;
                       firstChild.style.alignItems = 'end';
                     });
@@ -127,39 +124,4 @@ fn main() {
         })
         .run(context)
         .expect("error while running tauri application");
-}
-
-fn init_launch() -> Result<AutoLaunch> {
-    let app_exe = current_exe()?;
-    let app_exe = dunce::canonicalize(app_exe)?;
-    let app_name = app_exe
-        .file_stem()
-        .and_then(|f| f.to_str())
-        .ok_or_else(|| anyhow!("failed to get file stem"))?;
-
-    let app_path = app_exe
-        .as_os_str()
-        .to_str()
-        .ok_or_else(|| anyhow!("failed to get app_path"))?
-        .to_string();
-
-    #[cfg(target_os = "windows")]
-        let app_path = format!("\"{app_path}\"");
-
-    #[cfg(target_os = "macos")]
-        let app_path = (|| -> Option<String> {
-        let path = std::path::PathBuf::from(&app_path);
-        let path = path.parent()?.parent()?.parent()?;
-        let extension = path.extension()?.to_str()?;
-        match extension == "app" {
-            true => Some(path.as_os_str().to_str()?.to_string()),
-            false => None,
-        }
-    })()
-        .unwrap_or(app_path);
-
-    Ok(AutoLaunchBuilder::new()
-        .set_app_name(app_name)
-        .set_app_path(&app_path)
-        .build()?)
 }
