@@ -8,7 +8,7 @@ use std::env::current_exe;
 use anyhow::anyhow;
 use anyhow::Result;
 use auto_launch::{AutoLaunch, AutoLaunchBuilder};
-use tauri::{LogicalSize, Size, WindowBuilder, WindowUrl};
+use tauri::{Manager, WindowUrl};
 use tauri::api::process::{Command, CommandEvent};
 use tauri::utils::config::AppUrl;
 use window_shadows::set_shadow;
@@ -65,43 +65,49 @@ fn main() {
 
             // app.manage(init_launch().unwrap());
 
-            let main_window = WindowBuilder::new(
-                app,
-                "main".to_string(),
-                if cfg!(dev) {
-                    Default::default()
-                } else {
-                    window_url
-                }
-            )
-                .build()?;
+            let main_window = app.get_window("main").unwrap();
 
             #[cfg(any(windows, target_os = "macos"))]
             set_shadow(&main_window, true).unwrap();
 
             main_window.set_transparent_titlebar(true);
-            main_window.set_size(Size::Logical(LogicalSize {
-                width: 1400.0,
-                height: 842.0,
-            })).unwrap();
-            main_window.set_min_size(
-                Some(Size::Logical(LogicalSize {
-                    width: 400.0,
-                    height: 200.0,
-                }))
-            ).unwrap();
             main_window.center().unwrap();
 
             #[cfg(target_os = "macos")]
             main_window.eval(r#"
                 let newDiv = document.createElement('div');
                 newDiv.setAttribute('data-tauri-drag-region', '');
-                newDiv.style.height = '15px';
-                newDiv.style.width = '100%';
+                newDiv.style.height = '20px';
+                newDiv.style.width = 'calc(100% - 70px)';
                 newDiv.style.position = 'absolute';
                 newDiv.style.top = '0';
+                newDiv.style.marginLeft = '70px'
                 newDiv.style.zIndex = '999';
+                newDiv.style.cursor = 'move';
                 document.body.prepend(newDiv);
+            "#).unwrap();
+
+            #[cfg(target_os = "macos")]
+            main_window.eval(r#"
+                window.addEventListener('load', (event) => {
+
+                    function waitForElement(selector, callback) {
+                      const element = document.querySelector(selector);
+
+                      if(element) {
+                        callback(element);
+                        return;
+                      }
+
+                      setTimeout(() => waitForElement(selector, callback), 100);
+                    }
+
+                    waitForElement('header', header => {
+                      header.style.paddingBottom = '15px';
+                      let firstChild = header.firstElementChild;
+                      firstChild.style.alignItems = 'end';
+                    });
+                });
             "#).unwrap();
 
             tauri::async_runtime::spawn(async move {

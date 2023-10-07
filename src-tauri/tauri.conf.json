@@ -109,7 +109,18 @@
       "dialog": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM2RDU5RTkwQkI1NzFENDQKUldSRUhWZTdrSjdWTnMxVEg1Yjh5eCt1M2JCNytIdVNuN3duVm9LcUoveXdyTmlnU21ZTFEyejUK"
     },
-
+    "windows": [
+      {
+        "fullscreen": false,
+        "width": 1400.0,
+        "height": 890,
+        "resizable": true,
+        "title": "ServerMilk",
+        "titleBarStyle": "Transparent",
+        "minWidth": 450,
+        "minHeight": 200
+      }
+    ],
     "systemTray": {
       "iconPath": "icons/mac-icon.ico",
       "iconAsTemplate": true
