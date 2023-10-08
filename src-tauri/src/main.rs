@@ -1,23 +1,42 @@
 #![cfg_attr(
-all(not(debug_assertions), target_os = "windows"),
-windows_subsystem = "windows"
+    all(not(debug_assertions), target_os = "windows"),
+    windows_subsystem = "windows"
 )]
 
-use tauri::{Manager, WindowUrl};
 use tauri::api::process::{Command, CommandEvent};
 use tauri::utils::config::AppUrl;
+use tauri::{Manager, WindowUrl};
 use tauri_plugin_autostart::MacosLauncher;
 use window_shadows::set_shadow;
 
 #[cfg(target_os = "macos")]
 use crate::ext::window::WindowExt;
+use crate::utils::app_log_dir;
 
 mod command;
-mod tray;
 mod ext;
 mod hacker;
+mod tray;
+mod utils;
 
 fn main() {
+    let app_log_dir = app_log_dir();
+
+    let mut cmd_args: Vec<String> = vec!["--port".into(), "9527".into()];
+
+    if let Some(log_dir) = app_log_dir {
+        let log_dir = log_dir.to_str();
+        if let Some(log_dir) = log_dir {
+            cmd_args.push("-l".into());
+            cmd_args.push(log_dir.to_string());
+        }
+    }
+    let (mut rx, mut child) = Command::new_sidecar("serverbee-web")
+        .expect("failed to create `serverbee-web` binary command")
+        .args(cmd_args)
+        .spawn()
+        .expect("Failed to spawn sidecar");
+
     // make sure ../dist exists
     let mut context = tauri::generate_context!();
     let url = format!("http://localhost:{}", 9527).parse().unwrap();
@@ -28,27 +47,22 @@ fn main() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_window_state::Builder::default().build())
-        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec!["--flag1", "--flag2"])))
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::LaunchAgent,
+            Some(vec!["--flag1", "--flag2"]),
+        ))
         .system_tray(tray::menu())
         .on_system_tray_event(tray::handler)
-        .on_window_event(|event| if let tauri::WindowEvent::CloseRequested { api, .. } = event.event() {
-            event.window().hide().unwrap();
-            api.prevent_close();
+        .on_window_event(|event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event.event() {
+                event.window().hide().unwrap();
+                api.prevent_close();
+            }
         })
         .setup(move |app| {
             // don't show on the taskbar/springboard
             // #[cfg(target_os = "macos")]
             // app.set_activation_policy(tauri::ActivationPolicy::Accessory);
-
-            let (mut rx, mut child) = Command::new_sidecar("serverbee-web")
-            .expect("failed to create `serverbee-web` binary command")
-            .args(["--port", "9527", "-l", app.app_handle()
-            .path_resolver()
-            .app_log_dir()
-            .unwrap()
-            .join("web.log").as_os_str().to_str().unwrap()])
-            .spawn()
-            .expect("Failed to spawn sidecar");
 
             let main_window = app.get_window("main").unwrap();
 

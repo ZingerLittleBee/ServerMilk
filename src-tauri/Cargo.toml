@@ -14,7 +14,7 @@ tauri-build = { version = "1.5.0", features = [] }
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.4.1", features = ["api-all", "process-command-api", "system-tray", "updater"] }
+tauri = { version = "1.4.1", features = [ "api-all", "process-command-api", "system-tray", "updater"] }
 open = "3.0.3"
 anyhow = "1.0"
 port-selector = "0.1.6"
