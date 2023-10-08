@@ -85,12 +85,6 @@ window.addEventListener('load', (event) => {
     .titlebar-button:hover {
         background: #64748b;
     }
-
-    @media (prefers-color-scheme: dark) {
-        .titlebar-button {
-            color: white;
-        }
-      }
     `;
     var head = document.head || document.getElementsByTagName('head')[0];
     var style = document.createElement('style');
@@ -103,6 +97,31 @@ window.addEventListener('load', (event) => {
     } else {
         style.appendChild(document.createTextNode(css));
     }
+
+    let htmlElement = document.documentElement;
+
+    let observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.attributeName === "class") {
+                let classValue = htmlElement.getAttribute('class');
+
+                if (classValue.includes('dark')) {
+                    document.querySelectorAll('.titlebar-button').forEach((el) => {
+                        el.style.color = 'light';
+                    });
+                }
+                else if (classValue.includes('light')) {
+                    document.querySelectorAll('.titlebar-button').forEach((el) => {
+                        el.style.color = 'dark';
+                    });
+                }
+            }
+        });
+    });
+
+    let config = { attributes: true, attributeFilter: ['class'] };
+
+    observer.observe(htmlElement, config);
 });
 "#;
 

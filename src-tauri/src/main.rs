@@ -3,7 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use tauri::api::process::{Command, CommandEvent};
+use tauri::api::process::Command;
 use tauri::utils::config::AppUrl;
 use tauri::{Manager, WindowUrl};
 use tauri_plugin_autostart::MacosLauncher;
@@ -21,6 +21,7 @@ mod utils;
 
 fn main() {
     let app_log_dir = app_log_dir();
+    println!("app_log_dir: {:?}", app_log_dir);
 
     let mut cmd_args: Vec<String> = vec!["--port".into(), "9527".into()];
 
@@ -31,7 +32,7 @@ fn main() {
             cmd_args.push(log_dir.to_string());
         }
     }
-    let (mut rx, mut child) = Command::new_sidecar("serverbee-web")
+    let (_rx, _child) = Command::new_sidecar("serverbee-web")
         .expect("failed to create `serverbee-web` binary command")
         .args(cmd_args)
         .spawn()
@@ -80,19 +81,6 @@ fn main() {
             main_window.eval(hacker::CRATE_DRAG_REGION).unwrap();
 
             main_window.eval(hacker::MODIFY_NAVBAR).unwrap();
-
-            tauri::async_runtime::spawn(async move {
-                // read events such as stdout
-                while let Some(event) = rx.recv().await {
-                    if let CommandEvent::Stdout(line) = event {
-                        main_window
-                            .emit("message", Some(format!("'{}'", line)))
-                            .expect("failed to emit event");
-                        // write to stdin
-                        child.write("message from Rust\n".as_bytes()).unwrap();
-                    }
-                }
-            });
 
             Ok(())
         })
