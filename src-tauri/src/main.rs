@@ -9,26 +9,15 @@ use tauri::utils::config::AppUrl;
 use tauri_plugin_autostart::MacosLauncher;
 use window_shadows::set_shadow;
 
-
-use crate::command::{
-    launch::{disable_auto_launch, enable_auto_launch, is_enable_auto_launch},
-    log::{open_web_log, get_log_path},
-    port::is_free_port,
-};
-use crate::command::status::check_web_status;
+#[cfg(target_os = "macos")]
 use crate::ext::window::WindowExt;
 
 mod command;
 mod tray;
 mod ext;
+mod hacker;
 
 fn main() {
-    let (mut rx, mut child) = Command::new_sidecar("serverbee-web")
-        .expect("failed to create `serverbee-web` binary command")
-        .args(["--port", "9527"])
-        .spawn()
-        .expect("Failed to spawn sidecar");
-
     // make sure ../dist exists
     let mut context = tauri::generate_context!();
     let url = format!("http://localhost:{}", 9527).parse().unwrap();
@@ -40,15 +29,6 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec!["--flag1", "--flag2"])))
-        .invoke_handler(tauri::generate_handler![
-            is_enable_auto_launch,
-            enable_auto_launch,
-            disable_auto_launch,
-            open_web_log,
-            is_free_port,
-            check_web_status,
-            get_log_path
-        ])
         .system_tray(tray::menu())
         .on_system_tray_event(tray::handler)
         .on_window_event(|event| if let tauri::WindowEvent::CloseRequested { api, .. } = event.event() {
@@ -60,52 +40,32 @@ fn main() {
             // #[cfg(target_os = "macos")]
             // app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
-            // app.manage(init_launch().unwrap());
+            let (mut rx, mut child) = Command::new_sidecar("serverbee-web")
+            .expect("failed to create `serverbee-web` binary command")
+            .args(["--port", "9527", "-l", app.app_handle()
+            .path_resolver()
+            .app_log_dir()
+            .unwrap()
+            .join("web.log").as_os_str().to_str().unwrap()])
+            .spawn()
+            .expect("Failed to spawn sidecar");
 
             let main_window = app.get_window("main").unwrap();
 
             #[cfg(any(windows, target_os = "macos"))]
             set_shadow(&main_window, true).unwrap();
 
+            #[cfg(target_os = "macos")]
             main_window.set_transparent_titlebar(true);
+
+            #[cfg(not(target_os = "macos"))]
+            main_window.set_decorations(false).unwrap();
+
             main_window.center().unwrap();
 
-            #[cfg(target_os = "macos")]
-            main_window.eval(r#"
-                let newDiv = document.createElement('div');
-                newDiv.setAttribute('data-tauri-drag-region', '');
-                newDiv.style.height = '20px';
-                newDiv.style.width = 'calc(100% - 70px)';
-                newDiv.style.position = 'absolute';
-                newDiv.style.top = '0';
-                newDiv.style.marginLeft = '70px'
-                newDiv.style.zIndex = '999';
-                newDiv.style.cursor = 'move';
-                document.body.prepend(newDiv);
-            "#).unwrap();
+            main_window.eval(hacker::CRATE_DRAG_REGION).unwrap();
 
-            #[cfg(target_os = "macos")]
-            main_window.eval(r#"
-                window.addEventListener('load', (event) => {
-
-                    function waitForElement(selector, callback) {
-                      const element = document.querySelector(selector);
-
-                      if(element) {
-                        callback(element);
-                        return;
-                      }
-
-                      setTimeout(() => waitForElement(selector, callback), 100);
-                    }
-
-                    waitForElement('header', header => {
-                      header.style.paddingBottom = '10px';
-                      let firstChild = header.firstElementChild;
-                      firstChild.style.alignItems = 'end';
-                    });
-                });
-            "#).unwrap();
+            main_window.eval(hacker::MODIFY_NAVBAR).unwrap();
 
             tauri::async_runtime::spawn(async move {
                 // read events such as stdout

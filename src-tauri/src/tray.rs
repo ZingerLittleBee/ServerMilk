@@ -10,6 +10,9 @@ use tauri_plugin_autostart::ManagerExt;
 pub fn menu() -> SystemTray {
     let tray_menu = SystemTrayMenu::new()
         .add_item(CustomMenuItem::new("show".to_string(), "Open ServerMilk"))
+        .add_item(CustomMenuItem::new("reload", "Reload"))
+        .add_item(CustomMenuItem::new("log", "Open Log"))
+
         .add_item(CustomMenuItem::new("devtool".to_string(), "Open DevTool"))
         .add_item(CustomMenuItem::new("autostart".to_string(), "Autostart"))
         .add_item(CustomMenuItem::new("update".to_string(), "Check Update"))
@@ -27,6 +30,28 @@ pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
             "show" => {
                 window.show().unwrap();
                 window.set_focus().unwrap();
+            }
+            "reload" => {
+                window.app_handle().restart();
+            }
+            "log" => {
+                let log_path = app.app_handle()
+                .path_resolver()
+                .app_log_dir()
+                .unwrap()
+                .join("web.log");
+                if log_path.exists() {
+                    match open::that(log_path) {
+                        Ok(_) => {}
+                        Err(_) => {
+                            dialog::message(
+                                Some(&window),
+                                "Open Log",
+                                "Failed to open log file",
+                            );
+                        }
+                    }
+                }
             }
             "devtool" => {
                 window.open_devtools();

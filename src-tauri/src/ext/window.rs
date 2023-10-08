@@ -1,3 +1,4 @@
+#[cfg(target_os = "macos")]
 use cocoa::appkit::{NSWindow, NSWindowStyleMask};
 use tauri::{Runtime, Window};
 
