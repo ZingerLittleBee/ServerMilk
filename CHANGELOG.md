@@ -1,3 +1,16 @@
+## `2.0.1` (2023-10-09)
+
+### Features
+- New title bar
+- Dashboard UI
+- Open dev tools
+- Sync with server_bee-backend
+
+## `2.0.0` (2023-09-12)
+
+### Chore
+- Sync with server_bee-backend
+
 ## `1.2.5` (2023-06-07)
 
 ### Features
