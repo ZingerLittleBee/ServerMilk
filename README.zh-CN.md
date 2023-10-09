@@ -19,7 +19,11 @@ iOS 应用 [ServerBee](https://apps.apple.com/us/app/serverbee/id6443553714) 的
 
 ## 截图
 
-<img src="./snapshot/ServerMilk.png" alt="ServerMilk" width="400"/>
+![overview](./snapshot/desktop-overview.png)
+![process](./snapshot/desktop-process.png)
+![disk&network](./snapshot/desktop-disk&network.png)
+![terminal](./snapshot/desktop-terminal.png)
+![settings](./snapshot/desktop-settings.png)
 
 ## 如何编译
 
