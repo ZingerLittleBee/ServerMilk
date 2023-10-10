@@ -13,6 +13,9 @@
   "tauri": {
     "allowlist": {
       "all": true,
+      "globalShortcut": {
+        "all": true
+      },
       "fs": {
         "scope": [
           "**"
@@ -99,7 +102,12 @@
       }
     },
     "security": {
-      "csp": null
+      "csp": null,
+      "dangerousRemoteDomainIpcAccess": [{
+        "domain": "localhost",
+        "windows": ["dashboard"],
+        "enableTauriAPI": true
+      }]
     },
     "updater": {
       "active": true,
@@ -119,7 +127,8 @@
         "title": "ServerMilk",
         "titleBarStyle": "Transparent",
         "minWidth": 450,
-        "minHeight": 200
+        "minHeight": 200,
+        "visible": false
       }
     ],
     "systemTray": {

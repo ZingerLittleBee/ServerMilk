@@ -7,16 +7,19 @@ use ::log::info;
 use tauri::api::process::Command;
 use tauri::Manager;
 use tauri_plugin_autostart::MacosLauncher;
-use window_shadows::set_shadow;
+use crate::dashboard::open_dashboard;
 
 #[cfg(target_os = "macos")]
 use crate::ext::window::WindowExt;
+use crate::shortcut::register_shortcut;
 
 mod command;
 mod ext;
 mod hacker;
 mod tray;
 mod logs;
+mod dashboard;
+mod shortcut;
 
 fn main() {
     // make sure ../dist exists
@@ -79,23 +82,14 @@ fn main() {
 
             info!("child pid: {:?}", child.pid());
 
-            let main_window = app.get_window("main").unwrap();
-
-            #[cfg(any(windows, target_os = "macos"))]
-            set_shadow(&main_window, true).unwrap();
-
-            #[cfg(target_os = "macos")]
-            main_window.set_transparent_titlebar(true);
+            app.get_window("main").unwrap().hide().unwrap();
 
             #[cfg(not(target_os = "macos"))]
             main_window.set_decorations(false).unwrap();
 
-            main_window.center().unwrap();
+            open_dashboard(app.handle());
 
-            main_window.eval(hacker::CRATE_DRAG_REGION).unwrap();
-
-            main_window.eval(hacker::MODIFY_NAVBAR).unwrap();
-
+            register_shortcut(app.handle());
             Ok(())
         })
         .run(tauri::generate_context!())

@@ -1,9 +1,6 @@
 use tauri::api::dialog;
 use tauri::async_runtime::spawn;
-use tauri::{
-    AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
-    SystemTrayMenuItem,
-};
+use tauri::{AppHandle, CustomMenuItem, GlobalShortcutManager, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 use tauri::api::dialog::{MessageDialogBuilder, MessageDialogButtons};
 use tauri_plugin_autostart::ManagerExt;
 
@@ -17,22 +14,24 @@ pub fn menu() -> SystemTray {
         .add_item(CustomMenuItem::new("autostart".to_string(), "Autostart"))
         .add_item(CustomMenuItem::new("update".to_string(), "Check Update"))
         .add_native_item(SystemTrayMenuItem::Separator)
+        .add_item(CustomMenuItem::new("settings".to_string(), "Settings").accelerator("CmdOrCtrl+,"))
+        .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(CustomMenuItem::new("quit".to_string(), "Quit").accelerator("CmdOrCtrl+Q"));
 
     SystemTray::new().with_menu(tray_menu)
 }
 
 pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
-    let window = app.get_window("main").unwrap();
+    let dashboard_window = app.get_window("dashboard").unwrap();
 
     if let SystemTrayEvent::MenuItemClick { id, .. } = event {
         match id.as_str() {
             "show" => {
-                window.show().unwrap();
-                window.set_focus().unwrap();
+                dashboard_window.show().unwrap();
+                dashboard_window.set_focus().unwrap();
             }
             "reload" => {
-                window.app_handle().restart();
+                dashboard_window.app_handle().restart();
             }
             "log" => {
                 let log_path = app.path_resolver().app_log_dir().map(| dir | dir.join("web.log"));
@@ -41,7 +40,7 @@ pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
                         Ok(_) => {},
                         Err(err) => {
                             dialog::message(
-                                Some(&window),
+                                Some(&dashboard_window),
                                 "Open Log",
                                 format!("Open log file failed: {}", err),
                             );
@@ -49,20 +48,20 @@ pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
                     };
                 } else {
                     dialog::message(
-                        Some(&window),
+                        Some(&dashboard_window),
                         "Open Log",
                         "Log file not exists",
                     );
                 }
             }
             "devtool" => {
-                window.open_devtools();
+                dashboard_window.open_devtools();
             }
             "autostart" => {
                 let app_clone = app.clone();
 
                 MessageDialogBuilder::new("Autostart", "Enable or Disable autostart when system startup")
-                    .parent(&window)
+                    .parent(&dashboard_window)
                     .buttons(MessageDialogButtons::OkCancelWithLabels(
                         "Enable".into(),
                         "Disable".into(),
@@ -93,7 +92,22 @@ pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
                     )
                 });
             }
+            "settings" => {
+                app.get_window("main").unwrap().show().unwrap();
+                app.get_window("main").unwrap().center().unwrap();
 
+                match app.app_handle().global_shortcut_manager().is_registered("CmdOrCtrl+Q").unwrap() {
+                    true => {
+                        println!("set resizable");
+                        app.get_window("main").unwrap().set_resizable(true).unwrap();
+                    }
+                    false => {
+                        println!("set not resizable");
+                        app.get_window("main").unwrap().set_resizable(false).unwrap();
+                    }
+                }
+
+            }
             "quit" => {
                 app.exit(0);
             }
