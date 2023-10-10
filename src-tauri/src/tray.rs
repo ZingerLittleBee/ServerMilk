@@ -6,7 +6,6 @@ use tauri::{
 };
 use tauri::api::dialog::{MessageDialogBuilder, MessageDialogButtons};
 use tauri_plugin_autostart::ManagerExt;
-use crate::utils::app_log_dir;
 
 pub fn menu() -> SystemTray {
     let tray_menu = SystemTrayMenu::new()
@@ -36,7 +35,7 @@ pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
                 window.app_handle().restart();
             }
             "log" => {
-                let log_path = app_log_dir().map(| dir | dir.join("web.log"));
+                let log_path = app.path_resolver().app_log_dir().map(| dir | dir.join("web.log"));
                 if let Some(log_path) = log_path {
                     match open::that(log_path) {
                         Ok(_) => {},

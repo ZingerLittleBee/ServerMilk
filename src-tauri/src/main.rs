@@ -3,48 +3,29 @@
     windows_subsystem = "windows"
 )]
 
+use ::log::info;
 use tauri::api::process::Command;
-use tauri::utils::config::AppUrl;
-use tauri::{Manager, WindowUrl};
+use tauri::Manager;
 use tauri_plugin_autostart::MacosLauncher;
 use window_shadows::set_shadow;
 
 #[cfg(target_os = "macos")]
 use crate::ext::window::WindowExt;
-use crate::utils::app_log_dir;
 
 mod command;
 mod ext;
 mod hacker;
 mod tray;
-mod utils;
+mod logs;
 
 fn main() {
-    let app_log_dir = app_log_dir();
-    println!("app_log_dir: {:?}", app_log_dir);
-
-    let mut cmd_args: Vec<String> = vec!["--port".into(), "9527".into()];
-
-    if let Some(log_dir) = app_log_dir {
-        let log_dir = log_dir.to_str();
-        if let Some(log_dir) = log_dir {
-            cmd_args.push("-l".into());
-            cmd_args.push(log_dir.to_string());
-        }
-    }
-    let (_rx, _child) = Command::new_sidecar("serverbee-web")
-        .expect("failed to create `serverbee-web` binary command")
-        .args(cmd_args)
-        .spawn()
-        .expect("Failed to spawn sidecar");
-
     // make sure ../dist exists
-    let mut context = tauri::generate_context!();
-    let url = format!("http://localhost:{}", 9527).parse().unwrap();
-    let window_url = WindowUrl::External(url);
-    // rewrite the config so the IPC is enabled on this URL
-    context.config_mut().build.dist_dir = AppUrl::Url(window_url.clone());
-    context.config_mut().build.dev_path = AppUrl::Url(window_url.clone());
+    // let mut context = tauri::generate_context!();
+    // let url = format!("http://localhost:{}", 9527).parse().unwrap();
+    // let window_url = WindowUrl::External(url);
+    // // rewrite the config so the IPC is enabled on this URL
+    // context.config_mut().build.dist_dir = AppUrl::Url(window_url.clone());
+    // context.config_mut().build.dev_path = AppUrl::Url(window_url.clone());
 
     tauri::Builder::default()
         .plugin(tauri_plugin_window_state::Builder::default().build())
@@ -65,6 +46,39 @@ fn main() {
             // #[cfg(target_os = "macos")]
             // app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
+            let log_dir = app
+                .path_resolver()
+                .app_log_dir()
+                .expect("failed to get log dir");
+            let data_dir = app
+                .path_resolver()
+                .app_data_dir()
+                .expect("failed to get data dir");
+
+            logs::init_log(&log_dir);
+
+            let cmd_args: Vec<String> = vec![
+                "--port".into(),
+                "9527".into(),
+                "-l".into(),
+                log_dir.to_str().unwrap().into(),
+                "-d".into(),
+                data_dir.to_str().unwrap().into(),
+            ];
+
+            let (_rx, child) = Command::new_sidecar("serverbee-web")
+                .expect("failed to create `serverbee-web` binary command")
+                .args(cmd_args)
+                .spawn()
+                .expect("Failed to spawn sidecar");
+            // let output = Command::new_sidecar("serverbee-web")
+            //     .expect("failed to create `serverbee-web` binary command")
+            //     .args(cmd_args)
+            //     .output()
+            //     .expect("Failed to spawn sidecar");
+
+            info!("child pid: {:?}", child.pid());
+
             let main_window = app.get_window("main").unwrap();
 
             #[cfg(any(windows, target_os = "macos"))]
@@ -84,6 +98,6 @@ fn main() {
 
             Ok(())
         })
-        .run(context)
+        .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
