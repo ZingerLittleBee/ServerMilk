@@ -95,18 +95,6 @@ pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
             "settings" => {
                 app.get_window("main").unwrap().show().unwrap();
                 app.get_window("main").unwrap().center().unwrap();
-
-                match app.app_handle().global_shortcut_manager().is_registered("CmdOrCtrl+Q").unwrap() {
-                    true => {
-                        println!("set resizable");
-                        app.get_window("main").unwrap().set_resizable(true).unwrap();
-                    }
-                    false => {
-                        println!("set not resizable");
-                        app.get_window("main").unwrap().set_resizable(false).unwrap();
-                    }
-                }
-
             }
             "quit" => {
                 app.exit(0);

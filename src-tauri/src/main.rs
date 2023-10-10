@@ -5,7 +5,7 @@
 
 use ::log::info;
 use tauri::api::process::Command;
-use tauri::Manager;
+use tauri::{LogicalSize, Manager};
 use tauri_plugin_autostart::MacosLauncher;
 use crate::dashboard::open_dashboard;
 
@@ -82,12 +82,22 @@ fn main() {
 
             info!("child pid: {:?}", child.pid());
 
-            app.get_window("main").unwrap().hide().unwrap();
+            let main_window = app.get_window("main").unwrap();
+            // main_window.hide().unwrap();
+            main_window.set_title("Settings").unwrap();
+            main_window.set_size(
+                LogicalSize {
+                    width: 500.0,
+                    height: 400.0,
+                }
+            ).unwrap();
+            main_window.set_maximizable(false).unwrap();
+            main_window.set_minimizable(false).unwrap();
 
             #[cfg(not(target_os = "macos"))]
             main_window.set_decorations(false).unwrap();
 
-            open_dashboard(app.handle());
+            // open_dashboard(app.handle());
 
             register_shortcut(app.handle());
             Ok(())

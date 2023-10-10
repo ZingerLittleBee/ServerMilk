@@ -121,13 +121,11 @@
       {
         "transparent": true,
         "fullscreen": false,
-        "width": 1400.0,
-        "height": 890,
-        "resizable": true,
+        "width": 500.0,
+        "height": 800.0,
+        "resizable": false,
         "title": "ServerMilk",
         "titleBarStyle": "Transparent",
-        "minWidth": 450,
-        "minHeight": 200,
         "visible": false
       }
     ],
