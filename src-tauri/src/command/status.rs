@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 #[tauri::command]
-pub async fn check_web_status(port: u16) -> bool {
+pub async fn check_running_status(port: u16) -> bool {
     println!("Checking web status on port {}", port);
     let client = reqwest::Client::builder()
         .timeout(Duration::from_millis(100))

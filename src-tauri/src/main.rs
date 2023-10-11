@@ -3,23 +3,32 @@
     windows_subsystem = "windows"
 )]
 
+use std::sync::Mutex;
+use crate::command::dialog::open_message_dialog;
+use crate::command::status::check_running_status;
+use crate::command::log::open_log;
 use ::log::info;
-use tauri::api::process::Command;
+use tauri::api::process::{Command, CommandChild};
 use tauri::{LogicalSize, Manager};
 use tauri_plugin_autostart::MacosLauncher;
-use crate::dashboard::open_dashboard;
 
 #[cfg(target_os = "macos")]
 use crate::ext::window::WindowExt;
 use crate::shortcut::register_shortcut;
 
 mod command;
+mod dashboard;
 mod ext;
 mod hacker;
-mod tray;
 mod logs;
-mod dashboard;
 mod shortcut;
+mod tray;
+mod constant;
+mod utils;
+
+struct SidecarState {
+    child: Mutex<Option<CommandChild>>,
+}
 
 fn main() {
     // make sure ../dist exists
@@ -36,6 +45,10 @@ fn main() {
             MacosLauncher::LaunchAgent,
             Some(vec!["--flag1", "--flag2"]),
         ))
+        .manage(SidecarState { child: Mutex::new(None) })
+        .invoke_handler(tauri::generate_handler![
+            open_log,
+            open_message_dialog, check_running_status])
         .system_tray(tray::menu())
         .on_system_tray_event(tray::handler)
         .on_window_event(|event| {
@@ -74,23 +87,29 @@ fn main() {
                 .args(cmd_args)
                 .spawn()
                 .expect("Failed to spawn sidecar");
+
+            info!("child pid: {:?}", child.pid());
+
+            let state = app.state::<SidecarState>();
+            let mut child_lock = state.child.lock().unwrap();
+            *child_lock = Some(child);
+
             // let output = Command::new_sidecar("serverbee-web")
             //     .expect("failed to create `serverbee-web` binary command")
             //     .args(cmd_args)
             //     .output()
             //     .expect("Failed to spawn sidecar");
 
-            info!("child pid: {:?}", child.pid());
 
             let main_window = app.get_window("main").unwrap();
             // main_window.hide().unwrap();
             main_window.set_title("Settings").unwrap();
-            main_window.set_size(
-                LogicalSize {
+            main_window
+                .set_size(LogicalSize {
                     width: 500.0,
-                    height: 400.0,
-                }
-            ).unwrap();
+                    height: 420.0,
+                })
+                .unwrap();
             main_window.set_maximizable(false).unwrap();
             main_window.set_minimizable(false).unwrap();
 

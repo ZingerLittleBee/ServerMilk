@@ -1,8 +1,9 @@
 use tauri::api::dialog;
 use tauri::async_runtime::spawn;
-use tauri::{AppHandle, CustomMenuItem, GlobalShortcutManager, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
+use tauri::{AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 use tauri::api::dialog::{MessageDialogBuilder, MessageDialogButtons};
 use tauri_plugin_autostart::ManagerExt;
+use crate::utils::open_web_log;
 
 pub fn menu() -> SystemTray {
     let tray_menu = SystemTrayMenu::new()
@@ -34,25 +35,10 @@ pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
                 dashboard_window.app_handle().restart();
             }
             "log" => {
-                let log_path = app.path_resolver().app_log_dir().map(| dir | dir.join("web.log"));
-                if let Some(log_path) = log_path {
-                    match open::that(log_path) {
-                        Ok(_) => {},
-                        Err(err) => {
-                            dialog::message(
-                                Some(&dashboard_window),
-                                "Open Log",
-                                format!("Open log file failed: {}", err),
-                            );
-                        }
-                    };
-                } else {
-                    dialog::message(
-                        Some(&dashboard_window),
-                        "Open Log",
-                        "Log file not exists",
-                    );
-                }
+                open_web_log(
+                    &dashboard_window.app_handle(),
+                    &dashboard_window,
+                )
             }
             "devtool" => {
                 dashboard_window.open_devtools();

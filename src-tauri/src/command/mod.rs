@@ -1,3 +1,4 @@
-pub(crate) mod log;
-pub(crate) mod port;
-pub(crate) mod status;
+pub mod log;
+pub mod port;
+pub mod status;
+pub mod dialog;

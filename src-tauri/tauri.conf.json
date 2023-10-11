@@ -22,7 +22,11 @@
         ],
         "createDir": true,
         "readDir": true,
+        "readFile": true,
         "writeFile": true
+      },
+      "path": {
+        "all": true
       },
       "window": {
         "all": false,
