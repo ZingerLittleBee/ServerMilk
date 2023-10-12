@@ -33,9 +33,10 @@ import {
 } from './components/ui/tooltip'
 
 export default function App() {
-    const { settings, setPort, setIsAutoStart } = useSettings()
+    const { settings, setIsAutoStart } = useSettings()
     const [checked, setChecked] = useState(settings.isAutoStart)
     const [pid, setPid] = useState<number | null>(null)
+    const [port, setPort] = useState<number | null>(null)
     const [isRunning, setIsRunning] = useState(false)
 
     const checkRunningStatus = async () => {
@@ -46,11 +47,17 @@ export default function App() {
     const refreshStatus = async () => {
         checkRunningStatus()
         getPid()
+        getPort()
     }
 
     const getPid = async () => {
         const pid = await invoke<number>('get_pid')
         setPid(pid)
+    }
+
+    const getPort = async () => {
+        const port = await invoke<number>('get_port')
+        setPort(port)
     }
 
     const enableAutoStart = async () => invoke('enable_auto_start')
@@ -174,7 +181,7 @@ export default function App() {
                             The port to use for the application.
                         </span>
                     </Label>
-                    <Label className="p-2">{settings.port}</Label>
+                    <Label className="p-2">{port}</Label>
                 </div>
                 <div className="flex items-center justify-between space-x-2">
                     <Label className="flex flex-col space-y-1">

@@ -3,15 +3,19 @@
     windows_subsystem = "windows"
 )]
 
+use crate::command::auto_start::{disable_auto_start, enable_auto_start};
 use crate::command::dialog::open_message_dialog;
 use crate::command::log::open_log;
 use crate::command::status::{check_running_status, get_pid};
-use crate::command::auto_start::{enable_auto_start, disable_auto_start};
+use crate::command::port::get_port;
+use crate::constant::DEFAULT_PORT;
 use ::log::info;
+use port_selector::{select_from_given_port};
 use std::sync::Mutex;
 use tauri::api::process::{Command, CommandChild};
-use tauri::{LogicalSize, Manager};
+use tauri::{LogicalSize, Manager, Wry};
 use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_store::{Store, StoreBuilder};
 
 #[cfg(target_os = "macos")]
 use crate::ext::window::WindowExt;
@@ -29,6 +33,8 @@ mod utils;
 
 pub struct SidecarState {
     child: Mutex<Option<CommandChild>>,
+    store: Mutex<Option<Store<Wry>>>,
+    port: Mutex<Option<u16>>,
 }
 
 fn main() {
@@ -41,6 +47,7 @@ fn main() {
     // context.config_mut().build.dev_path = AppUrl::Url(window_url.clone());
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,
@@ -48,12 +55,15 @@ fn main() {
         ))
         .manage(SidecarState {
             child: Mutex::new(None),
+            store: Mutex::new(None),
+            port: Mutex::new(None),
         })
         .invoke_handler(tauri::generate_handler![
             open_log,
             open_message_dialog,
             check_running_status,
             get_pid,
+            get_port,
             enable_auto_start,
             disable_auto_start,
         ])
@@ -70,6 +80,26 @@ fn main() {
             // #[cfg(target_os = "macos")]
             // app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
+            let config_dir = app
+                .path_resolver()
+                .app_config_dir()
+                .expect("failed to get config dir");
+
+            let state = app.state::<SidecarState>();
+
+            let store = StoreBuilder::new(app.handle(), config_dir).build();
+
+            let port = store
+                .get("port")
+                .map(|v| select_from_given_port(v.as_u64().unwrap() as u16).unwrap())
+                .unwrap_or_else(|| select_from_given_port(DEFAULT_PORT).unwrap());
+
+            let mut store_lock = state.store.lock().unwrap();
+            *store_lock = Some(store);
+
+            let mut port_lock = state.port.lock().unwrap();
+            *port_lock = Some(port);
+
             let log_dir = app
                 .path_resolver()
                 .app_log_dir()
@@ -83,7 +113,7 @@ fn main() {
 
             let cmd_args: Vec<String> = vec![
                 "--port".into(),
-                "9527".into(),
+                port.to_string(),
                 "-l".into(),
                 log_dir.to_str().unwrap().into(),
                 "-d".into(),
@@ -98,7 +128,7 @@ fn main() {
 
             info!("child pid: {:?}", child.pid());
 
-            let state = app.state::<SidecarState>();
+
             let mut child_lock = state.child.lock().unwrap();
             *child_lock = Some(child);
 
