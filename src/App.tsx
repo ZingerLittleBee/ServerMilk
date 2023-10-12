@@ -34,12 +34,31 @@ import {
 
 export default function App() {
     const { settings, setPort, setIsAutoStart } = useSettings()
+    const [checked, setChecked] = useState(settings.isAutoStart)
+    const [pid, setPid] = useState<number | null>(null)
     const [isRunning, setIsRunning] = useState(false)
 
     const checkRunningStatus = async () => {
-        const res = await invoke('check_running_status')
+        const res = await invoke<boolean>('check_running_status')
         setIsRunning(res)
     }
+
+    const refreshStatus = async () => {
+        checkRunningStatus()
+        getPid()
+    }
+
+    const getPid = async () => {
+        const pid = await invoke<number>('get_pid')
+        setPid(pid)
+    }
+
+    const enableAutoStart = async () => invoke('enable_auto_start')
+    const disableAutoStart = async () => invoke('disable_auto_start')
+
+    useEffect(() => {
+        refreshStatus()
+    }, [])
 
     const openLog = () => {
         invoke('open_log')
@@ -73,7 +92,7 @@ export default function App() {
                             <RotateCw
                                 size="15"
                                 className="stroke-muted-foreground cursor-pointer"
-                                onClick={checkRunningStatus}
+                                onClick={refreshStatus}
                             />
                         </div>
                         <span className="font-normal leading-snug text-muted-foreground">
@@ -81,11 +100,16 @@ export default function App() {
                         </span>
                     </Label>
 
-                    {isRunning ? (
-                        <Badge variant="default">Running</Badge>
-                    ) : (
-                        <Badge variant="destructive">Stopped</Badge>
-                    )}
+                    <div className="space-x-2">
+                        <Badge variant="outline">
+                            PID: {pid ? pid : 'N/A'}
+                        </Badge>
+                        {isRunning ? (
+                            <Badge variant="default">Running</Badge>
+                        ) : (
+                            <Badge variant="destructive">Stopped</Badge>
+                        )}
+                    </div>
                 </div>
                 <div className="flex items-center justify-between space-x-2">
                     <Label className="flex flex-col space-y-1">
@@ -94,7 +118,14 @@ export default function App() {
                             Automatically start when system startup.
                         </span>
                     </Label>
-                    <Switch checked={settings.isAutoStart} />
+                    <Switch
+                        checked={checked}
+                        onCheckedChange={(checked) => {
+                            setChecked(checked)
+                            checked ? enableAutoStart() : disableAutoStart()
+                            setIsAutoStart(checked)
+                        }}
+                    />
                 </div>
                 <div className="flex items-center justify-between space-x-2">
                     <Label

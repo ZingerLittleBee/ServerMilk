@@ -2,13 +2,15 @@ use tauri::api::dialog;
 use tauri::async_runtime::spawn;
 use tauri::{AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 use tauri::api::dialog::{MessageDialogBuilder, MessageDialogButtons};
+use tauri::api::path::BaseDirectory::Log;
 use tauri_plugin_autostart::ManagerExt;
 use crate::utils::open_web_log;
 
 pub fn menu() -> SystemTray {
     let tray_menu = SystemTrayMenu::new()
-        .add_item(CustomMenuItem::new("show".to_string(), "Open ServerMilk"))
-        .add_item(CustomMenuItem::new("reload", "Reload"))
+        .add_item(CustomMenuItem::new("open_control_panel".to_string(), "Open Control Panel"))
+        .add_item(CustomMenuItem::new("open_dashboard".to_string(), "Open Dashboard"))
+        .add_item(CustomMenuItem::new("reload", "Reload Dashboard"))
         .add_item(CustomMenuItem::new("log", "Open Log"))
 
         .add_item(CustomMenuItem::new("devtool".to_string(), "Open DevTool"))
@@ -23,11 +25,16 @@ pub fn menu() -> SystemTray {
 }
 
 pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
+    let control_panel_window = app.get_window("main").unwrap();
     let dashboard_window = app.get_window("dashboard").unwrap();
 
     if let SystemTrayEvent::MenuItemClick { id, .. } = event {
         match id.as_str() {
-            "show" => {
+            "open_control_panel" => {
+                control_panel_window.show().unwrap();
+                control_panel_window.set_focus().unwrap();
+            }
+            "open_dashboard" => {
                 dashboard_window.show().unwrap();
                 dashboard_window.set_focus().unwrap();
             }

@@ -3,11 +3,12 @@
     windows_subsystem = "windows"
 )]
 
-use std::sync::Mutex;
 use crate::command::dialog::open_message_dialog;
-use crate::command::status::check_running_status;
 use crate::command::log::open_log;
+use crate::command::status::{check_running_status, get_pid};
+use crate::command::auto_start::{enable_auto_start, disable_auto_start};
 use ::log::info;
+use std::sync::Mutex;
 use tauri::api::process::{Command, CommandChild};
 use tauri::{LogicalSize, Manager};
 use tauri_plugin_autostart::MacosLauncher;
@@ -17,16 +18,16 @@ use crate::ext::window::WindowExt;
 use crate::shortcut::register_shortcut;
 
 mod command;
+mod constant;
 mod dashboard;
 mod ext;
 mod hacker;
 mod logs;
 mod shortcut;
 mod tray;
-mod constant;
 mod utils;
 
-struct SidecarState {
+pub struct SidecarState {
     child: Mutex<Option<CommandChild>>,
 }
 
@@ -45,10 +46,17 @@ fn main() {
             MacosLauncher::LaunchAgent,
             Some(vec!["--flag1", "--flag2"]),
         ))
-        .manage(SidecarState { child: Mutex::new(None) })
+        .manage(SidecarState {
+            child: Mutex::new(None),
+        })
         .invoke_handler(tauri::generate_handler![
             open_log,
-            open_message_dialog, check_running_status])
+            open_message_dialog,
+            check_running_status,
+            get_pid,
+            enable_auto_start,
+            disable_auto_start,
+        ])
         .system_tray(tray::menu())
         .on_system_tray_event(tray::handler)
         .on_window_event(|event| {
@@ -99,7 +107,6 @@ fn main() {
             //     .args(cmd_args)
             //     .output()
             //     .expect("Failed to spawn sidecar");
-
 
             let main_window = app.get_window("main").unwrap();
             // main_window.hide().unwrap();
