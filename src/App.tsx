@@ -1,4 +1,9 @@
 import { useEffect, useState } from 'react'
+import {
+    enableAutoStartInvoke,
+    getPortInvoke,
+    openLogInvoke,
+} from '@/command.ts'
 import { invoke } from '@tauri-apps/api'
 import { Copy, Pencil, RotateCw } from 'lucide-react'
 
@@ -44,39 +49,22 @@ export default function App() {
         setIsRunning(res)
     }
 
+    const getPid = async () => setPid(await getPortInvoke())
+
+    const getPort = async () => setPort(await getPortInvoke())
+
+    const enableAutoStart = enableAutoStartInvoke
+    const disableAutoStart = enableAutoStartInvoke
+    const openLog = openLogInvoke
+
     const refreshStatus = async () => {
         checkRunningStatus()
         getPid()
         getPort()
     }
 
-    const getPid = async () => {
-        const pid = await invoke<number>('get_pid')
-        setPid(pid)
-    }
-
-    const getPort = async () => {
-        const port = await invoke<number>('get_port')
-        setPort(port)
-    }
-
-    const enableAutoStart = async () => invoke('enable_auto_start')
-    const disableAutoStart = async () => invoke('disable_auto_start')
-
     useEffect(() => {
         refreshStatus()
-    }, [])
-
-    const openLog = () => {
-        invoke('open_log')
-    }
-
-    useEffect(() => {
-        // invoke('open_message_dialog', {
-        //     title: 'Hello from React',
-        //     message: `Hello from React: ${settings.port}`,
-        //     windows: 'main',
-        // })
     }, [])
 
     return (
@@ -149,7 +137,7 @@ export default function App() {
                                     />
                                 </DialogTrigger>
                                 <DialogContent className="w-[325px]">
-                                    <DialogHeader>
+                                    <DialogHeader className="text-left">
                                         <DialogTitle>New port</DialogTitle>
                                         <DialogDescription>
                                             Click save when you're done.
@@ -169,6 +157,9 @@ export default function App() {
                                             />
                                         </div>
                                     </div>
+                                    <Label className="text-sm font-medium text-destructive">
+                                        port already in use
+                                    </Label>
                                     <DialogFooter>
                                         <Button type="submit">
                                             Save changes

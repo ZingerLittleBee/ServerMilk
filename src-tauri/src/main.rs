@@ -7,7 +7,7 @@ use crate::command::auto_start::{disable_auto_start, enable_auto_start};
 use crate::command::dialog::open_message_dialog;
 use crate::command::log::open_log;
 use crate::command::status::{check_running_status, get_pid};
-use crate::command::port::get_port;
+use crate::command::port::{get_port, is_free_port};
 use crate::constant::DEFAULT_PORT;
 use ::log::info;
 use port_selector::{select_from_given_port};
@@ -64,6 +64,7 @@ fn main() {
             check_running_status,
             get_pid,
             get_port,
+            is_free_port,
             enable_auto_start,
             disable_auto_start,
         ])
@@ -132,15 +133,9 @@ fn main() {
             let mut child_lock = state.child.lock().unwrap();
             *child_lock = Some(child);
 
-            // let output = Command::new_sidecar("serverbee-web")
-            //     .expect("failed to create `serverbee-web` binary command")
-            //     .args(cmd_args)
-            //     .output()
-            //     .expect("Failed to spawn sidecar");
-
             let main_window = app.get_window("main").unwrap();
             // main_window.hide().unwrap();
-            main_window.set_title("Settings").unwrap();
+            main_window.set_title("Control Panel").unwrap();
             main_window
                 .set_size(LogicalSize {
                     width: 500.0,
