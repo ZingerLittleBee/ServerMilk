@@ -79,3 +79,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+    .icon-button {
+        @apply stroke-muted-foreground cursor-pointer;
+    }
+}

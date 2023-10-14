@@ -2,7 +2,6 @@ use tauri::api::dialog;
 use tauri::async_runtime::spawn;
 use tauri::{AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 use tauri::api::dialog::{MessageDialogBuilder, MessageDialogButtons};
-use tauri::api::path::BaseDirectory::Log;
 use tauri_plugin_autostart::ManagerExt;
 use crate::utils::open_web_log;
 

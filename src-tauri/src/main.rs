@@ -8,11 +8,10 @@ use crate::command::dialog::open_message_dialog;
 use crate::command::log::open_log;
 use crate::command::status::{check_running_status, get_pid};
 use crate::command::port::{get_port, is_free_port};
-use crate::constant::DEFAULT_PORT;
-use ::log::info;
-use port_selector::{select_from_given_port};
+use crate::command::sidecar::{restart_sidecar, start_sidecar, start_with_new_port};
+use crate::command::token::fetch_token;
 use std::sync::Mutex;
-use tauri::api::process::{Command, CommandChild};
+use tauri::api::process::CommandChild;
 use tauri::{LogicalSize, Manager, Wry};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_store::{Store, StoreBuilder};
@@ -23,7 +22,6 @@ use crate::shortcut::register_shortcut;
 
 mod command;
 mod constant;
-mod dashboard;
 mod ext;
 mod hacker;
 mod logs;
@@ -38,14 +36,6 @@ pub struct SidecarState {
 }
 
 fn main() {
-    // make sure ../dist exists
-    // let mut context = tauri::generate_context!();
-    // let url = format!("http://localhost:{}", 9527).parse().unwrap();
-    // let window_url = WindowUrl::External(url);
-    // // rewrite the config so the IPC is enabled on this URL
-    // context.config_mut().build.dist_dir = AppUrl::Url(window_url.clone());
-    // context.config_mut().build.dev_path = AppUrl::Url(window_url.clone());
-
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_window_state::Builder::default().build())
@@ -59,6 +49,7 @@ fn main() {
             port: Mutex::new(None),
         })
         .invoke_handler(tauri::generate_handler![
+            fetch_token,
             open_log,
             open_message_dialog,
             check_running_status,
@@ -67,6 +58,8 @@ fn main() {
             is_free_port,
             enable_auto_start,
             disable_auto_start,
+            restart_sidecar,
+            start_with_new_port
         ])
         .system_tray(tray::menu())
         .on_system_tray_event(tray::handler)
@@ -77,9 +70,13 @@ fn main() {
             }
         })
         .setup(move |app| {
-            // don't show on the taskbar/springboard
-            // #[cfg(target_os = "macos")]
-            // app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+
+            let log_dir = app
+                .path_resolver()
+                .app_log_dir()
+                .expect("failed to get log dir");
+
+            logs::init_log(&log_dir);
 
             let config_dir = app
                 .path_resolver()
@@ -90,48 +87,13 @@ fn main() {
 
             let store = StoreBuilder::new(app.handle(), config_dir).build();
 
-            let port = store
-                .get("port")
-                .map(|v| select_from_given_port(v.as_u64().unwrap() as u16).unwrap())
-                .unwrap_or_else(|| select_from_given_port(DEFAULT_PORT).unwrap());
+            {
+                let mut store_lock = state.store.lock().unwrap();
+                *store_lock = Some(store);
+                drop(store_lock);
+            }
 
-            let mut store_lock = state.store.lock().unwrap();
-            *store_lock = Some(store);
-
-            let mut port_lock = state.port.lock().unwrap();
-            *port_lock = Some(port);
-
-            let log_dir = app
-                .path_resolver()
-                .app_log_dir()
-                .expect("failed to get log dir");
-            let data_dir = app
-                .path_resolver()
-                .app_data_dir()
-                .expect("failed to get data dir");
-
-            logs::init_log(&log_dir);
-
-            let cmd_args: Vec<String> = vec![
-                "--port".into(),
-                port.to_string(),
-                "-l".into(),
-                log_dir.to_str().unwrap().into(),
-                "-d".into(),
-                data_dir.to_str().unwrap().into(),
-            ];
-
-            let (_rx, child) = Command::new_sidecar("serverbee-web")
-                .expect("failed to create `serverbee-web` binary command")
-                .args(cmd_args)
-                .spawn()
-                .expect("Failed to spawn sidecar");
-
-            info!("child pid: {:?}", child.pid());
-
-
-            let mut child_lock = state.child.lock().unwrap();
-            *child_lock = Some(child);
+            start_sidecar(app.handle(), state.clone(), None);
 
             let main_window = app.get_window("main").unwrap();
             // main_window.hide().unwrap();

@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
 import {
     enableAutoStartInvoke,
+    fetchTokenInvoke,
     getPortInvoke,
     openLogInvoke,
+    startWithNewPortInvoke,
 } from '@/command.ts'
 import { PortForm } from '@/port-form.tsx'
 import { invoke } from '@tauri-apps/api'
-import { Copy, Pencil, RotateCw } from 'lucide-react'
+import { Check, Copy, Pencil, RotateCw } from 'lucide-react'
 
+import { cn } from '@/lib/utils.ts'
 import { useSettings } from '@/hooks/useSettings.ts'
 import { Button } from '@/components/ui/button.tsx'
 import {
@@ -44,6 +47,10 @@ export default function App() {
     const [pid, setPid] = useState<number | null>(null)
     const [port, setPort] = useState<number | null>(null)
     const [isRunning, setIsRunning] = useState(false)
+    const [token, setToken] = useState<string | null>(null)
+    const [isCopy, setIsCopy] = useState(false)
+    const [portDialogIsOpen, setPortDialogIsOpen] = useState(false)
+    const [isSpin, setIsSpin] = useState(false)
 
     const checkRunningStatus = async () => {
         const res = await invoke<boolean>('check_running_status')
@@ -53,6 +60,9 @@ export default function App() {
     const getPid = async () => setPid(await getPortInvoke())
 
     const getPort = async () => setPort(await getPortInvoke())
+    const getToken = async () => setToken(await fetchTokenInvoke())
+
+    const startWithNewPort = startWithNewPortInvoke
 
     const enableAutoStart = enableAutoStartInvoke
     const disableAutoStart = enableAutoStartInvoke
@@ -62,12 +72,13 @@ export default function App() {
         checkRunningStatus()
         getPid()
         getPort()
+        getToken()
     }
 
     useEffect(() => {
-        const timer = setTimeout(() => {
+        const timer = setInterval(() => {
             refreshStatus()
-        }, 1000)
+        }, 2000)
 
         return () => {
             clearTimeout(timer)
@@ -93,8 +104,15 @@ export default function App() {
 
                             <RotateCw
                                 size="15"
-                                className="stroke-muted-foreground cursor-pointer"
-                                onClick={refreshStatus}
+                                className={cn(
+                                    'stroke-muted-foreground cursor-pointer',
+                                    isSpin && 'animate-spin'
+                                )}
+                                onClick={async () => {
+                                    setIsSpin(true)
+                                    await refreshStatus()
+                                    setTimeout(() => setIsSpin(false), 1000)
+                                }}
                             />
                         </div>
                         <span className="font-normal leading-snug text-muted-foreground">
@@ -136,7 +154,10 @@ export default function App() {
                     >
                         <div className="flex items-center space-x-2">
                             <span>Port</span>
-                            <Dialog>
+                            <Dialog
+                                open={portDialogIsOpen}
+                                onOpenChange={setPortDialogIsOpen}
+                            >
                                 <DialogTrigger asChild>
                                     <Pencil
                                         size="15"
@@ -152,7 +173,10 @@ export default function App() {
                                     </DialogHeader>
                                     <PortForm
                                         port={port ? port : undefined}
-                                        onNewPort={setPort}
+                                        onNewPort={(port) => {
+                                            startWithNewPort(port)
+                                            setPortDialogIsOpen(false)
+                                        }}
                                     />
                                 </DialogContent>
                             </Dialog>
@@ -162,21 +186,6 @@ export default function App() {
                         </span>
                     </Label>
                     <Label className="p-2">{port}</Label>
-                </div>
-                <div className="flex items-center justify-between space-x-2">
-                    <Label className="flex flex-col space-y-1">
-                        <span>Logs</span>
-                        <span className="font-normal leading-snug text-muted-foreground">
-                            View the application logs.
-                        </span>
-                    </Label>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openLog()}
-                    >
-                        Open
-                    </Button>
                 </div>
                 <div className="flex items-center justify-between space-x-2">
                     <Label htmlFor="token" className="flex flex-col space-y-1">
@@ -217,25 +226,53 @@ export default function App() {
                                     </DialogFooter>
                                 </DialogContent>
                             </Dialog>
-                            <Copy size="15" className="cursor-pointer" />
+                            {isCopy ? (
+                                <Check size="15" className="icon-button" />
+                            ) : (
+                                <Copy
+                                    size="15"
+                                    className="icon-button"
+                                    onClick={async () => {
+                                        setIsCopy(true)
+                                        await navigator.clipboard.writeText(
+                                            token as string
+                                        )
+                                        setTimeout(() => setIsCopy(false), 2000)
+                                    }}
+                                />
+                            )}
                         </div>
                         <span className="font-normal leading-snug text-muted-foreground">
                             The token to use for the ServerBee.
                         </span>
                     </Label>
-
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Label className="max-w-[180px] truncate p-2 text-right">
-                                    sduyhu198247937uiasdadasdasdasdsaa
+                                    {token}
                                 </Label>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>Add to library</p>
+                                <p>{token}</p>
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
+                </div>
+                <div className="flex items-center justify-between space-x-2">
+                    <Label className="flex flex-col space-y-1">
+                        <span>Logs</span>
+                        <span className="font-normal leading-snug text-muted-foreground">
+                            View the application logs.
+                        </span>
+                    </Label>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openLog()}
+                    >
+                        Open
+                    </Button>
                 </div>
             </CardContent>
         </Card>

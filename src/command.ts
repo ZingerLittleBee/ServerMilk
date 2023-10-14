@@ -11,3 +11,10 @@ export const getPidInvoke = async () => invoke<number>('get_pid')
 
 export const isFreePortInvoke = async (port: number) =>
     invoke<boolean>('is_free_port', { port })
+
+export const fetchTokenInvoke = async () => invoke<string>('fetch_token')
+
+export const startWithNewPortInvoke = async (port: number) =>
+    invoke('start_with_new_port', {
+        port,
+    })
