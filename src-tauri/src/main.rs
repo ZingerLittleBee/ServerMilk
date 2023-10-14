@@ -3,6 +3,7 @@
     windows_subsystem = "windows"
 )]
 
+use std::sync::{Arc, RwLock};
 use crate::command::auto_start::{disable_auto_start, enable_auto_start};
 use crate::command::dialog::open_message_dialog;
 use crate::command::log::open_log;
@@ -10,11 +11,14 @@ use crate::command::status::{check_running_status, get_pid};
 use crate::command::port::{get_port, is_free_port};
 use crate::command::sidecar::{restart_sidecar, start_sidecar, start_with_new_port};
 use crate::command::token::fetch_token;
-use std::sync::Mutex;
+use serde_json::json;
 use tauri::api::process::CommandChild;
 use tauri::{LogicalSize, Manager, Wry};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_store::{Store, StoreBuilder};
+use anyhow::Result;
+use log::{info, warn};
+use crate::constant::SETTINGS_FILE_NAME;
 
 #[cfg(target_os = "macos")]
 use crate::ext::window::WindowExt;
@@ -29,10 +33,64 @@ mod shortcut;
 mod tray;
 mod utils;
 
+#[derive(Default)]
 pub struct SidecarState {
-    child: Mutex<Option<CommandChild>>,
-    store: Mutex<Option<Store<Wry>>>,
-    port: Mutex<Option<u16>>,
+    child: Option<CommandChild>,
+    store: Option<Store<Wry>>,
+    port: Option<u16>,
+}
+
+impl SidecarState {
+    pub fn set_store(&mut self, store: Store<Wry>) {
+        self.store = Some(store);
+    }
+
+    pub fn get_port(&self) -> u16 {
+        self.port.unwrap_or_else(|| {
+            let store = self.store.as_ref().unwrap();
+            store
+                .get("port")
+                .map(|v| v.as_u64().unwrap() as u16)
+                .unwrap_or(constant::DEFAULT_PORT)
+        })
+    }
+
+    pub fn set_port(&mut self, port: u16) -> Result<bool> {
+        self.port = Some(port);
+
+        if let Some(store) = self.store.as_mut() {
+            match store.insert("port".into(), json!(port)) {
+                Ok(_) => {
+                    match store.save() {
+                        Ok(_) => {}
+                        Err(e) => {
+                            warn!("failed to save store: {}", e);
+                        }
+                    }
+                    Ok(true)
+                },
+                Err(e) => {
+                    warn!("failed to set port: {}", e);
+                    Ok(false)
+                }
+            }
+        } else {
+            Ok(false)
+        }
+
+    }
+
+    pub fn set_child(&mut self, child: CommandChild) {
+        self.child = Some(child);
+    }
+
+    pub fn kill_sidecar(&mut self) -> bool {
+        if let Some(child) = self.child.take() {
+            child.kill().is_ok()
+        } else {
+            false
+        }
+    }
 }
 
 fn main() {
@@ -43,11 +101,6 @@ fn main() {
             MacosLauncher::LaunchAgent,
             Some(vec!["--flag1", "--flag2"]),
         ))
-        .manage(SidecarState {
-            child: Mutex::new(None),
-            store: Mutex::new(None),
-            port: Mutex::new(None),
-        })
         .invoke_handler(tauri::generate_handler![
             fetch_token,
             open_log,
@@ -61,6 +114,7 @@ fn main() {
             restart_sidecar,
             start_with_new_port
         ])
+        .manage(Arc::new(RwLock::new(SidecarState::default())))
         .system_tray(tray::menu())
         .on_system_tray_event(tray::handler)
         .on_window_event(|event| {
@@ -83,14 +137,20 @@ fn main() {
                 .app_config_dir()
                 .expect("failed to get config dir");
 
-            let state = app.state::<SidecarState>();
+            info!("config_dir: {:?}", config_dir);
 
-            let store = StoreBuilder::new(app.handle(), config_dir).build();
+            let state = app.state::<Arc<RwLock<SidecarState>>>();
 
-            {
-                let mut store_lock = state.store.lock().unwrap();
-                *store_lock = Some(store);
-                drop(store_lock);
+            let mut store = StoreBuilder::new(app.handle(), config_dir.join(SETTINGS_FILE_NAME)).build();
+            match store.load() {
+                Ok(_) => {}
+                Err(e) => {
+                    warn!("failed to load store: {}", e);
+                }
+            }
+
+            if let Ok(mut state) = state.try_write() {
+                state.set_store(store);
             }
 
             start_sidecar(app.handle(), state.clone(), None);

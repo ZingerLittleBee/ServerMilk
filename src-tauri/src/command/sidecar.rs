@@ -1,10 +1,11 @@
+use std::sync::{Arc, RwLock};
 use log::info;
 use tauri::api::process::Command;
 use crate::constant::DEFAULT_PORT;
 use crate::SidecarState;
 
 #[tauri::command]
-pub fn start_sidecar(app_handle: tauri::AppHandle, state: tauri::State<SidecarState>, port: Option<u16>) {
+pub fn start_sidecar(app_handle: tauri::AppHandle, state: tauri::State<Arc<RwLock<SidecarState>>>, port: Option<u16>) {
     let log_dir = app_handle
         .path_resolver()
         .app_log_dir()
@@ -15,18 +16,25 @@ pub fn start_sidecar(app_handle: tauri::AppHandle, state: tauri::State<SidecarSt
         .expect("failed to get data dir");
 
     let port = port.unwrap_or_else(|| {
-        let store = state.store.lock().unwrap();
-        store.as_ref().unwrap()
-            .get("port")
-            .map(|v| v.as_u64().unwrap() as u16)
-            .unwrap_or(DEFAULT_PORT)
+        match state.try_read() {
+            Ok(state) => {
+                state.get_port()
+            }
+            Err(_) => {
+                DEFAULT_PORT
+            }
+        }
     });
 
-    info!("port: {}", port);
+    info!("start sidecar with port: {}", port);
 
-    {
-        let mut port_lock = state.port.lock().unwrap();
-        *port_lock = Some(port);
+    match state.try_write() {
+        Ok(mut state) => {
+            state.set_port(port).unwrap();
+        }
+        Err(_) => {
+            info!("failed to set port");
+        }
     }
 
     let cmd_args: Vec<String> = vec![
@@ -47,28 +55,34 @@ pub fn start_sidecar(app_handle: tauri::AppHandle, state: tauri::State<SidecarSt
         .expect("Failed to spawn sidecar");
 
     info!("child pid: {:?}", child.pid());
-    let mut child_lock = state.child.lock().unwrap();
-    *child_lock = Some(child);
+
+    match state.try_write() {
+        Ok(mut state) => {
+            state.child = Some(child);
+        }
+        Err(_) => {
+            info!("failed to set child");
+        }
+    }
 }
 
 #[tauri::command]
-pub fn kill_sidecar(state: tauri::State<SidecarState>) -> bool {
-    let mut child_lock = state.child.lock().unwrap();
-    if let Some(child) = child_lock.take() {
-        child.kill().is_ok()
+pub fn kill_sidecar(state: tauri::State<Arc<RwLock<SidecarState>>>) -> bool {
+    if let Ok(mut state) = state.try_write() {
+        state.kill_sidecar()
     } else {
         false
     }
 }
 
 #[tauri::command]
-pub fn restart_sidecar(app_handle: tauri::AppHandle, state: tauri::State<SidecarState>) {
+pub fn restart_sidecar(app_handle: tauri::AppHandle, state: tauri::State<Arc<RwLock<SidecarState>>>) {
     kill_sidecar(state.clone());
     start_sidecar(app_handle, state, None);
 }
 
 #[tauri::command]
-pub fn start_with_new_port(app_handle: tauri::AppHandle, state: tauri::State<SidecarState>, port: u16) {
+pub fn start_with_new_port(app_handle: tauri::AppHandle, state: tauri::State<Arc<RwLock<SidecarState>>>, port: u16) {
     kill_sidecar(state.clone());
     start_sidecar(app_handle, state, Some(port));
 }

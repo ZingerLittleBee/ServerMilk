@@ -1,21 +1,28 @@
+use std::sync::{Arc, RwLock};
 use crate::SidecarState;
 
 #[tauri::command]
-pub fn check_running_status(state: tauri::State<SidecarState>) -> bool {
-    let mut child = state.child.lock().unwrap();
-    if child.is_none() {
-        return false;
+pub fn check_running_status(state: tauri::State<Arc<RwLock<SidecarState>>>) -> bool {
+    if let Ok(state) = state.try_read() {
+        if let Some(child) = &state.child {
+            child.pid() > 0
+        } else {
+             false
+        }
+    } else {
+        false
     }
-    let child = child.as_mut().unwrap();
-    child.pid() > 0
 }
 
 #[tauri::command]
-pub fn get_pid(state: tauri::State<SidecarState>) -> u32 {
-    let mut child = state.child.lock().unwrap();
-    if child.is_none() {
-        return 0;
+pub fn get_pid(state: tauri::State<Arc<RwLock<SidecarState>>>) -> u32 {
+    if let Ok(state) = state.try_read() {
+        if let Some(child) = &state.child {
+            child.pid()
+        } else {
+            0
+        }
+    } else {
+        0
     }
-    let child = child.as_mut().unwrap();
-    child.pid()
 }

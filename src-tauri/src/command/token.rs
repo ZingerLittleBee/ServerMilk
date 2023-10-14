@@ -1,5 +1,5 @@
+use std::sync::{Arc, RwLock};
 use std::time::Duration;
-use anyhow::anyhow;
 use crate::SidecarState;
 use serde::Deserialize;
 
@@ -16,9 +16,18 @@ struct ApiResponse {
 }
 
 #[tauri::command]
-pub async fn fetch_token(state: tauri::State<'_, SidecarState>) -> Result<String, String> {
-    let port = state.port.lock().unwrap().unwrap();
+pub async fn fetch_token(state: tauri::State<'_, Arc<RwLock<SidecarState>>>) -> Result<String, String> {
+    
+    let port = {
+        let state = state.try_read();
+        if let Ok(state) = state {
+            state.get_port()
+        } else {
+            return Err("failed to fetch token".into());
+        }
+    };
 
+    
     let url = format!("http://localhost:{}/local/config/app", port);
 
     let client = reqwest::Client::builder()
@@ -30,7 +39,7 @@ pub async fn fetch_token(state: tauri::State<'_, SidecarState>) -> Result<String
         .send()
         .await;
 
-    match resp {
+    return  match resp {
         Ok(resp) => {
             let api_resp: ApiResponse = resp.json().await.unwrap();
             if !api_resp.success {

@@ -1,4 +1,6 @@
+use std::sync::{Arc, RwLock};
 use port_selector::is_free;
+use crate::constant::DEFAULT_PORT;
 use crate::SidecarState;
 
 #[tauri::command]
@@ -8,7 +10,13 @@ pub fn is_free_port(port: u16) -> bool {
 
 
 #[tauri::command]
-pub fn get_port(state: tauri::State<SidecarState>) -> u16 {
-    let port_lock = state.port.lock().unwrap();
-    port_lock.unwrap()
+pub fn get_port(state: tauri::State<Arc<RwLock<SidecarState>>>) -> u16 {
+    match state.try_read() {
+        Ok(state) => {
+            state.port.unwrap_or(DEFAULT_PORT)
+        }
+        Err(_) => {
+            DEFAULT_PORT
+        }
+    }
 }
