@@ -4,6 +4,7 @@ import {
     getPortInvoke,
     openLogInvoke,
 } from '@/command.ts'
+import { PortForm } from '@/port-form.tsx'
 import { invoke } from '@tauri-apps/api'
 import { Copy, Pencil, RotateCw } from 'lucide-react'
 
@@ -64,7 +65,13 @@ export default function App() {
     }
 
     useEffect(() => {
-        refreshStatus()
+        const timer = setTimeout(() => {
+            refreshStatus()
+        }, 1000)
+
+        return () => {
+            clearTimeout(timer)
+        }
     }, [])
 
     return (
@@ -143,28 +150,10 @@ export default function App() {
                                             Click save when you're done.
                                         </DialogDescription>
                                     </DialogHeader>
-                                    <div className="grid gap-4 py-4">
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                            <Label
-                                                htmlFor="port"
-                                                className="text-right"
-                                            >
-                                                Port
-                                            </Label>
-                                            <Input
-                                                id="port"
-                                                className="col-span-3"
-                                            />
-                                        </div>
-                                    </div>
-                                    <Label className="text-sm font-medium text-destructive">
-                                        port already in use
-                                    </Label>
-                                    <DialogFooter>
-                                        <Button type="submit">
-                                            Save changes
-                                        </Button>
-                                    </DialogFooter>
+                                    <PortForm
+                                        port={port ? port : undefined}
+                                        onNewPort={setPort}
+                                    />
                                 </DialogContent>
                             </Dialog>
                         </div>
