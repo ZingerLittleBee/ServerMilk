@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 
+import { Button } from '@/components/ui/button'
 import {
     Form,
     FormControl,
@@ -12,8 +13,6 @@ import {
     FormMessage,
 } from '@/components/ui/form.tsx'
 import { Input } from '@/components/ui/input.tsx'
-
-import { Button } from './components/ui/button'
 
 const formSchema = z.object({
     port: z.coerce.number().int().min(0).max(65535),
