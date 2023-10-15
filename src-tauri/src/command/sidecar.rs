@@ -58,7 +58,7 @@ pub fn start_sidecar(app_handle: tauri::AppHandle, state: tauri::State<Arc<RwLoc
 
     match state.try_write() {
         Ok(mut state) => {
-            state.child = Some(child);
+            state.set_child(child);
         }
         Err(_) => {
             info!("failed to set child");

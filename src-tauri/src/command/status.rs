@@ -4,11 +4,7 @@ use crate::SidecarState;
 #[tauri::command]
 pub fn check_running_status(state: tauri::State<Arc<RwLock<SidecarState>>>) -> bool {
     if let Ok(state) = state.try_read() {
-        if let Some(child) = &state.child {
-            child.pid() > 0
-        } else {
-             false
-        }
+        state.get_pid() > 0
     } else {
         false
     }
@@ -17,11 +13,7 @@ pub fn check_running_status(state: tauri::State<Arc<RwLock<SidecarState>>>) -> b
 #[tauri::command]
 pub fn get_pid(state: tauri::State<Arc<RwLock<SidecarState>>>) -> u32 {
     if let Ok(state) = state.try_read() {
-        if let Some(child) = &state.child {
-            child.pid()
-        } else {
-            0
-        }
+        state.get_pid()
     } else {
         0
     }

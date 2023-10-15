@@ -10,19 +10,17 @@ use crate::command::log::open_log;
 use crate::command::status::{check_running_status, get_pid};
 use crate::command::port::{get_port, is_free_port};
 use crate::command::sidecar::{restart_sidecar, start_sidecar, start_with_new_port};
-use crate::command::token::fetch_token;
-use serde_json::json;
-use tauri::api::process::CommandChild;
-use tauri::{LogicalSize, Manager, Wry};
+use crate::command::token::{fetch_token, set_token};
+use tauri::{LogicalSize, Manager};
 use tauri_plugin_autostart::MacosLauncher;
-use tauri_plugin_store::{Store, StoreBuilder};
-use anyhow::Result;
+use tauri_plugin_store::StoreBuilder;
 use log::{info, warn};
 use crate::constant::SETTINGS_FILE_NAME;
 
 #[cfg(target_os = "macos")]
 use crate::ext::window::WindowExt;
 use crate::shortcut::register_shortcut;
+use crate::state::SidecarState;
 
 mod command;
 mod constant;
@@ -32,66 +30,9 @@ mod logs;
 mod shortcut;
 mod tray;
 mod utils;
+mod state;
 
-#[derive(Default)]
-pub struct SidecarState {
-    child: Option<CommandChild>,
-    store: Option<Store<Wry>>,
-    port: Option<u16>,
-}
 
-impl SidecarState {
-    pub fn set_store(&mut self, store: Store<Wry>) {
-        self.store = Some(store);
-    }
-
-    pub fn get_port(&self) -> u16 {
-        self.port.unwrap_or_else(|| {
-            let store = self.store.as_ref().unwrap();
-            store
-                .get("port")
-                .map(|v| v.as_u64().unwrap() as u16)
-                .unwrap_or(constant::DEFAULT_PORT)
-        })
-    }
-
-    pub fn set_port(&mut self, port: u16) -> Result<bool> {
-        self.port = Some(port);
-
-        if let Some(store) = self.store.as_mut() {
-            match store.insert("port".into(), json!(port)) {
-                Ok(_) => {
-                    match store.save() {
-                        Ok(_) => {}
-                        Err(e) => {
-                            warn!("failed to save store: {}", e);
-                        }
-                    }
-                    Ok(true)
-                },
-                Err(e) => {
-                    warn!("failed to set port: {}", e);
-                    Ok(false)
-                }
-            }
-        } else {
-            Ok(false)
-        }
-
-    }
-
-    pub fn set_child(&mut self, child: CommandChild) {
-        self.child = Some(child);
-    }
-
-    pub fn kill_sidecar(&mut self) -> bool {
-        if let Some(child) = self.child.take() {
-            child.kill().is_ok()
-        } else {
-            false
-        }
-    }
-}
 
 fn main() {
     tauri::Builder::default()
@@ -103,6 +44,7 @@ fn main() {
         ))
         .invoke_handler(tauri::generate_handler![
             fetch_token,
+            set_token,
             open_log,
             open_message_dialog,
             check_running_status,

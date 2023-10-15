@@ -13,7 +13,7 @@ pub fn is_free_port(port: u16) -> bool {
 pub fn get_port(state: tauri::State<Arc<RwLock<SidecarState>>>) -> u16 {
     match state.try_read() {
         Ok(state) => {
-            state.port.unwrap_or(DEFAULT_PORT)
+            state.get_port()
         }
         Err(_) => {
             DEFAULT_PORT
