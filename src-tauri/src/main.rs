@@ -3,19 +3,19 @@
     windows_subsystem = "windows"
 )]
 
-use std::sync::{Arc, RwLock};
-use crate::command::auto_start::{disable_auto_start, enable_auto_start};
+use crate::command::auto_start::{disable_auto_start, enable_auto_start, is_enable_auto_start};
 use crate::command::dialog::open_message_dialog;
 use crate::command::log::open_log;
-use crate::command::status::{check_running_status, get_pid};
 use crate::command::port::{get_port, is_free_port};
 use crate::command::sidecar::{restart_sidecar, start_sidecar, start_with_new_port};
+use crate::command::status::{check_running_status, get_pid};
 use crate::command::token::{fetch_token, set_token};
+use crate::constant::SETTINGS_FILE_NAME;
+use log::{info, warn};
+use std::sync::{Arc, RwLock};
 use tauri::{LogicalSize, Manager};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_store::StoreBuilder;
-use log::{info, warn};
-use crate::constant::SETTINGS_FILE_NAME;
 
 #[cfg(target_os = "macos")]
 use crate::ext::window::WindowExt;
@@ -28,11 +28,9 @@ mod ext;
 mod hacker;
 mod logs;
 mod shortcut;
+mod state;
 mod tray;
 mod utils;
-mod state;
-
-
 
 fn main() {
     tauri::Builder::default()
@@ -40,7 +38,7 @@ fn main() {
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(tauri_plugin_autostart::init(
             MacosLauncher::LaunchAgent,
-            Some(vec!["--flag1", "--flag2"]),
+            Some(vec![]),
         ))
         .invoke_handler(tauri::generate_handler![
             fetch_token,
@@ -51,6 +49,7 @@ fn main() {
             get_pid,
             get_port,
             is_free_port,
+            is_enable_auto_start,
             enable_auto_start,
             disable_auto_start,
             restart_sidecar,
@@ -66,7 +65,6 @@ fn main() {
             }
         })
         .setup(move |app| {
-
             let log_dir = app
                 .path_resolver()
                 .app_log_dir()
@@ -83,7 +81,8 @@ fn main() {
 
             let state = app.state::<Arc<RwLock<SidecarState>>>();
 
-            let mut store = StoreBuilder::new(app.handle(), config_dir.join(SETTINGS_FILE_NAME)).build();
+            let mut store =
+                StoreBuilder::new(app.handle(), config_dir.join(SETTINGS_FILE_NAME)).build();
             match store.load() {
                 Ok(_) => {}
                 Err(e) => {

@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog.tsx'
 import { Label } from '@/components/ui/label.tsx'
 
-export default function PortWidget() {
+export default function PortWidget({ signal }: { signal: number }) {
     const [port, setPort] = useState<number | null>(null)
     const [isOpen, setIsOpen] = useState(false)
     const getPort = async () => setPort(await getPortInvoke())
@@ -22,7 +22,7 @@ export default function PortWidget() {
 
     useEffect(() => {
         getPort()
-    }, [])
+    }, [signal])
 
     return (
         <div className="flex items-center justify-between space-x-2">

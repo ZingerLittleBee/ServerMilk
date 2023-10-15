@@ -21,7 +21,7 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
 
-export default function TokenWidget() {
+export default function TokenWidget({ signal }: { signal: number }) {
     const [isCopy, setIsCopy] = useState(false)
     const [token, setToken] = useState<string | null>(null)
 
@@ -29,7 +29,7 @@ export default function TokenWidget() {
 
     useEffect(() => {
         getToken()
-    }, [])
+    }, [signal])
 
     return (
         <div className="flex items-center justify-between space-x-2">

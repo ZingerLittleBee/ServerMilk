@@ -1,16 +1,26 @@
-import { useState } from 'react'
-import { enableAutoStartInvoke } from '@/command.ts'
+import { useEffect, useState } from 'react'
+import {
+    disableAutoStartInvoke,
+    enableAutoStartInvoke,
+    isEnableAutoStartInvoke,
+} from '@/command.ts'
 
-import { useSettings } from '@/hooks/useSettings.ts'
 import { Label } from '@/components/ui/label.tsx'
 import { Switch } from '@/components/ui/switch.tsx'
 
-export default function AutoStartWidget() {
-    const { settings, setIsAutoStart } = useSettings()
-    const [checked, setChecked] = useState(settings.isAutoStart)
+export default function AutoStartWidget({ signal }: { signal: number }) {
+    const [checked, setChecked] = useState(false)
 
+    const isEnableAutoStart = isEnableAutoStartInvoke
     const enableAutoStart = enableAutoStartInvoke
-    const disableAutoStart = enableAutoStartInvoke
+    const disableAutoStart = disableAutoStartInvoke
+
+    useEffect(() => {
+        const checkAutoStart = async () => {
+            setChecked(await isEnableAutoStart())
+        }
+        checkAutoStart()
+    }, [signal])
 
     return (
         <div className="flex items-center justify-between space-x-2">
@@ -25,7 +35,6 @@ export default function AutoStartWidget() {
                 onCheckedChange={(checked) => {
                     setChecked(checked)
                     checked ? enableAutoStart() : disableAutoStart()
-                    setIsAutoStart(checked)
                 }}
             />
         </div>

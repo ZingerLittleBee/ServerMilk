@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
-import { getPortInvoke } from '@/command.ts'
+import { getPidInvoke } from '@/command.ts'
 import { invoke } from '@tauri-apps/api'
-import { RotateCw } from 'lucide-react'
 
-import { cn } from '@/lib/utils.ts'
 import { Badge } from '@/components/ui/badge.tsx'
 import { Label } from '@/components/ui/label.tsx'
 
@@ -12,9 +10,7 @@ export default function StatusWidget() {
 
     const [isRunning, setIsRunning] = useState(false)
 
-    const [isSpin, setIsSpin] = useState(false)
-
-    const getPid = async () => setPid(await getPortInvoke())
+    const getPid = async () => setPid(await getPidInvoke())
 
     const checkRunningStatus = async () => {
         const res = await invoke<boolean>('check_running_status')
@@ -39,21 +35,7 @@ export default function StatusWidget() {
     return (
         <div className="flex items-center justify-between space-x-2">
             <Label htmlFor="running status" className="flex flex-col space-y-1">
-                <div className="flex space-x-2 items-center">
-                    <span>Running Status</span>
-                    <RotateCw
-                        size="15"
-                        className={cn(
-                            'stroke-muted-foreground cursor-pointer',
-                            isSpin && 'animate-spin'
-                        )}
-                        onClick={async () => {
-                            setIsSpin(true)
-                            await refreshStatus()
-                            setTimeout(() => setIsSpin(false), 1000)
-                        }}
-                    />
-                </div>
+                <span>Running Status</span>
                 <span className="font-normal leading-snug text-muted-foreground">
                     The application status.
                 </span>
