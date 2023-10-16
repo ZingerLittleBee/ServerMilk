@@ -101,7 +101,7 @@ fn main() {
             main_window.set_title("Control Panel").unwrap();
             main_window
                 .set_size(LogicalSize {
-                    width: 500.0,
+                    width: 420.0,
                     height: 420.0,
                 })
                 .unwrap();

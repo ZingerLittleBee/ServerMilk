@@ -13,7 +13,7 @@ struct ResponseData {
 #[derive(Debug, Deserialize)]
 struct ApiResponse {
     success: bool,
-    data: ResponseData,
+    data: Option<ResponseData>,
 }
 
 #[tauri::command]
@@ -41,7 +41,11 @@ pub async fn fetch_token(
             if !api_resp.success {
                 return Err("failed to fetch token".into());
             }
-            Ok(api_resp.data.token)
+            if api_resp.data.is_some() {
+                Ok(api_resp.data.unwrap().token)
+            } else {
+                Ok("".into())
+            }
         }
         Err(_) => Err("failed to fetch token".into()),
     }
@@ -50,7 +54,7 @@ pub async fn fetch_token(
 #[tauri::command]
 pub async fn set_token(
     state: tauri::State<'_, Arc<RwLock<SidecarState>>>,
-    new_token: String,
+    token: String,
 ) -> Result<bool, String> {
     let port = match get_port_from_state(state.clone()) {
         Ok(port) => port,
@@ -68,7 +72,7 @@ pub async fn set_token(
     let resp = client
         .post(url)
         .json(&json!({
-            "token": new_token
+            "token": token
         }))
         .send()
         .await;
