@@ -19,6 +19,7 @@ iOS 应用 [ServerBee](https://apps.apple.com/us/app/serverbee/id6443553714) 的
 
 ## 截图
 
+![control-panel](./snapshot/desktop-control-panel.png)
 ![overview](./snapshot/desktop-overview.png)
 ![process](./snapshot/desktop-process.png)
 ![disk&network](./snapshot/desktop-disk&network.png)

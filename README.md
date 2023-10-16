@@ -19,6 +19,7 @@ Backend for iOS application named [ServerBee](https://apps.apple.com/us/app/serv
 
 ## Snapshot
 
+![control-panel](./snapshot/desktop-control-panel.png)
 ![overview](./snapshot/desktop-overview.png)
 ![process](./snapshot/desktop-process.png)
 ![disk&network](./snapshot/desktop-disk&network.png)
