@@ -12,7 +12,7 @@ pub fn open_web_log(app_handle: &AppHandle, window: &Window) {
             Err(err) => {
                 dialog::message(
                     Some(window),
-                    "Open Log",
+                    "Open Logs",
                     format!("Open log file failed: {}", err),
                 );
             }
@@ -20,7 +20,7 @@ pub fn open_web_log(app_handle: &AppHandle, window: &Window) {
     } else {
         dialog::message(
             Some(window),
-            "Open Log",
+            "Open Logs",
             "Log file not exists",
         );
     }

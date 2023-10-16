@@ -1,13 +1,13 @@
-use std::sync::{Arc, RwLock};
+use crate::command::dashboard::open_dashboard;
+use crate::state::SidecarState;
 use crate::utils::open_web_log;
+use std::sync::{Arc, RwLock};
 use tauri::api::dialog;
 use tauri::async_runtime::spawn;
 use tauri::{
     AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
     SystemTrayMenuItem,
 };
-use crate::command::dashboard::open_dashboard;
-use crate::state::SidecarState;
 
 pub fn menu() -> SystemTray {
     let tray_menu = SystemTrayMenu::new()
@@ -19,9 +19,8 @@ pub fn menu() -> SystemTray {
             "open_dashboard".to_string(),
             "Open Dashboard",
         ))
-        .add_item(CustomMenuItem::new("reload", "Reload Dashboard"))
         .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(CustomMenuItem::new("log", "Open Log"))
+        .add_item(CustomMenuItem::new("log", "Open Logs"))
         .add_item(CustomMenuItem::new("devtool".to_string(), "Open DevTool"))
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(CustomMenuItem::new("update".to_string(), "Check Update"))
@@ -54,19 +53,12 @@ pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
                     dashboard_window.set_focus().unwrap();
                 }
             },
-            "reload" => match dashboard_window_option {
-                None => {}
-                Some(dashboard_window) => dashboard_window.app_handle().restart(),
-            },
-            "log" => match dashboard_window_option {
-                None => {}
-                Some(dashboard_window) => {
-                    open_web_log(&dashboard_window.app_handle(), &dashboard_window)
-                }
-            },
+            "log" => open_web_log(&control_panel_window.app_handle(), &control_panel_window),
             "devtool" => match dashboard_window_option {
-                None => {}
                 Some(dashboard_window) => dashboard_window.open_devtools(),
+                None => {
+                    control_panel_window.open_devtools();
+                }
             },
             "update" => {
                 let app_clone = app.clone();

@@ -71,6 +71,12 @@ fn main() {
             }
         })
         .setup(move |app| {
+
+            // don't show on the taskbar/springboard
+            #[cfg(target_os = "macos")]
+            app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+
+
             let log_dir = app
                 .path_resolver()
                 .app_log_dir()
