@@ -16,8 +16,6 @@ pub fn open_dashboard(handle: tauri::AppHandle, state: tauri::State<Arc<RwLock<S
         tauri::WindowUrl::External(format!("http://localhost:{}", port).parse().unwrap())
     ).build().unwrap();
 
-
-
     dashboard_window.set_title("ServerMilk").unwrap();
     dashboard_window.set_decorations(true).unwrap();
     // dashboard_window.set_resizable(true).unwrap();

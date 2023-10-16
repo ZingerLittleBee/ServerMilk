@@ -10,7 +10,7 @@ use crate::command::port::{get_port, is_free_port};
 use crate::command::sidecar::{restart_sidecar, start_sidecar, start_with_new_port};
 use crate::command::status::{check_running_status, get_pid};
 use crate::command::token::{fetch_token, set_token};
-use crate::constant::SETTINGS_FILE_NAME;
+use crate::constant::{SETTINGS_FILE_NAME, CONTROL_PANEL_WINDOW_LABEL, DASHBOARD_WINDOW_LABEL};
 use log::{info, warn};
 use std::sync::{Arc, RwLock};
 use tauri::{LogicalSize, Manager};
@@ -60,8 +60,14 @@ fn main() {
         .on_system_tray_event(tray::handler)
         .on_window_event(|event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event.event() {
-                event.window().hide().unwrap();
-                api.prevent_close();
+                match event.window().label() {
+                    CONTROL_PANEL_WINDOW_LABEL => {
+                        event.window().hide().unwrap();
+                        api.prevent_close();
+                    }
+                    DASHBOARD_WINDOW_LABEL => {}
+                    _ => {}
+                }
             }
         })
         .setup(move |app| {

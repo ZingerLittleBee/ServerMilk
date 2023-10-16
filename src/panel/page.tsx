@@ -56,7 +56,7 @@ export default function ControlPanel() {
                     </TooltipProvider>
                 </CardTitle>
                 <CardDescription className="cursor-default">
-                    Manage your settings here.
+                    Manage ServerBee Service.
                 </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
