@@ -119,7 +119,10 @@ fn main() {
                 .unwrap();
             main_window.set_maximizable(false).unwrap();
             main_window.set_minimizable(false).unwrap();
+
+            #[cfg(target_os = "macos")]
             main_window.set_transparent_titlebar(true);
+            
             main_window.set_decorations(true).unwrap();
 
             #[cfg(not(target_os = "macos"))]
