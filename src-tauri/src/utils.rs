@@ -1,6 +1,7 @@
 use std::sync::{Arc, RwLock};
 use tauri::api::dialog;
 use tauri::{AppHandle, Window};
+use crate::constant::DEFAULT_PORT;
 use crate::state::SidecarState;
 
 pub fn open_web_log(app_handle: &AppHandle, window: &Window) {
@@ -25,11 +26,11 @@ pub fn open_web_log(app_handle: &AppHandle, window: &Window) {
     }
 }
 
-pub fn get_port_from_state(state: tauri::State<'_, Arc<RwLock<SidecarState>>>) -> Result<u16, String> {
+pub fn get_port_from_state(state: tauri::State<'_, Arc<RwLock<SidecarState>>>) -> u16 {
     let state = state.try_read();
     if let Ok(state) = state {
-        Ok(state.get_port())
+        state.get_port()
     } else {
-        Err("failed to get port".into())
+        DEFAULT_PORT
     }
 }

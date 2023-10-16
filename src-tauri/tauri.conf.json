@@ -129,7 +129,6 @@
         "height": 800.0,
         "resizable": false,
         "title": "ServerMilk",
-        "titleBarStyle": "Transparent",
         "visible": false
       }
     ],

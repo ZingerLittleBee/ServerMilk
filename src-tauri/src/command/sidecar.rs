@@ -3,6 +3,7 @@ use log::info;
 use tauri::api::process::Command;
 use crate::constant::DEFAULT_PORT;
 use crate::SidecarState;
+use crate::utils::get_port_from_state;
 
 #[tauri::command]
 pub fn start_sidecar(app_handle: tauri::AppHandle, state: tauri::State<Arc<RwLock<SidecarState>>>, port: Option<u16>) {
@@ -15,16 +16,7 @@ pub fn start_sidecar(app_handle: tauri::AppHandle, state: tauri::State<Arc<RwLoc
         .app_data_dir()
         .expect("failed to get data dir");
 
-    let port = port.unwrap_or_else(|| {
-        match state.try_read() {
-            Ok(state) => {
-                state.get_port()
-            }
-            Err(_) => {
-                DEFAULT_PORT
-            }
-        }
-    });
+    let port = get_port_from_state(state.clone());
 
     info!("start sidecar with port: {}", port);
 

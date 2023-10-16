@@ -1,15 +1,22 @@
+use std::sync::{Arc, RwLock};
 use tauri::LogicalSize;
 use window_shadows::set_shadow;
 use crate::ext::window::WindowExt;
 use crate::hacker;
+use crate::state::SidecarState;
+use crate::utils::get_port_from_state;
 
 #[tauri::command]
-pub fn open_dashboard(handle: tauri::AppHandle) {
+pub fn open_dashboard(handle: tauri::AppHandle, state: tauri::State<Arc<RwLock<SidecarState>>>) {
+    let port = get_port_from_state(state.clone());
+
     let dashboard_window = tauri::WindowBuilder::new(
         &handle,
         "dashboard",
-        tauri::WindowUrl::External(format!("http://localhost:{}", 9527).parse().unwrap())
+        tauri::WindowUrl::External(format!("http://localhost:{}", port).parse().unwrap())
     ).build().unwrap();
+
+
 
     dashboard_window.set_title("ServerMilk").unwrap();
     dashboard_window.set_decorations(true).unwrap();

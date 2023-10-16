@@ -20,12 +20,7 @@ struct ApiResponse {
 pub async fn fetch_token(
     state: tauri::State<'_, Arc<RwLock<SidecarState>>>,
 ) -> Result<String, String> {
-    let port = match get_port_from_state(state.clone()) {
-        Ok(port) => port,
-        Err(_) => {
-            return Err("failed to fetch token".into());
-        }
-    };
+    let port = get_port_from_state(state.clone());
 
     let url = format!("http://localhost:{}/local/config/app", port);
 
@@ -56,12 +51,7 @@ pub async fn set_token(
     state: tauri::State<'_, Arc<RwLock<SidecarState>>>,
     token: String,
 ) -> Result<bool, String> {
-    let port = match get_port_from_state(state.clone()) {
-        Ok(port) => port,
-        Err(_) => {
-            return Err("failed to fetch token".into());
-        }
-    };
+    let port = get_port_from_state(state.clone());
 
     let url = format!("http://localhost:{}/local/config/app", port);
 
