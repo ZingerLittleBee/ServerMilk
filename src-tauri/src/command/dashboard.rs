@@ -17,7 +17,13 @@ pub fn open_dashboard(handle: tauri::AppHandle, state: tauri::State<Arc<RwLock<S
     ).build().unwrap();
 
     dashboard_window.set_title("ServerMilk").unwrap();
+
+    #[cfg(target_os = "macos")]
     dashboard_window.set_decorations(true).unwrap();
+
+    #[cfg(not(target_os = "macos"))]
+    dashboard_window.set_decorations(false).unwrap();
+
     // dashboard_window.set_resizable(true).unwrap();
 
     dashboard_window.set_size(

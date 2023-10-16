@@ -16,6 +16,7 @@ use std::sync::{Arc, RwLock};
 use tauri::{LogicalSize, Manager};
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_store::StoreBuilder;
+use window_shadows::set_shadow;
 
 #[cfg(target_os = "macos")]
 use crate::ext::window::WindowExt;
@@ -76,7 +77,6 @@ fn main() {
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
-
             let log_dir = app
                 .path_resolver()
                 .app_log_dir()
@@ -122,11 +122,17 @@ fn main() {
 
             #[cfg(target_os = "macos")]
             main_window.set_transparent_titlebar(true);
-            
+
+            #[cfg(target_os = "macos")]
             main_window.set_decorations(true).unwrap();
 
             #[cfg(not(target_os = "macos"))]
             main_window.set_decorations(false).unwrap();
+
+            set_shadow(&main_window, true).unwrap();
+
+            #[cfg(not(target_os = "macos"))]
+            main_window.eval(hacker::CRATE_DRAG_REGION).unwrap();
 
             // open_dashboard(app.handle());
 

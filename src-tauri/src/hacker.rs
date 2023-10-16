@@ -80,7 +80,7 @@ window.addEventListener('load', (event) => {
         justify-content: center;
         align-items: center;
         width: 40px;
-        height: 30px;
+        height: 20px;
     }
     .titlebar-button:hover {
         background: #64748b;
