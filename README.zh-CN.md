@@ -44,6 +44,14 @@ $ pnpm tauri build
 
 在 `src-tauri/target/release/bundle` 可以找到对应的安装包
 
+## “ServerMilk” 已损坏，无法打开
+“ServerMilk”已损坏，无法打开。你应该把它移到垃圾桶里。
+
+解决方法: 打开终端输入如下命令
+```shell
+xattr -cr /Applications/ServerMilk.app
+```
+
 ## 发现问题或有建议
 
 [Create an issue](https://github.com/ZingerLittleBee/ServerMilk/issues)

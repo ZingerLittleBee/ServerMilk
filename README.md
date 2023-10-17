@@ -44,6 +44,15 @@ $ pnpm tauri build
 
 and then, find release in `src-tauri/target/release/bundle`
 
+## “ServerMilk” is damaged and can’t be opened
+“ServerMilk” is damaged and can’t be opened. You should move it to the Trash.
+
+Solution: Open the terminal and enter the following command
+
+```shell
+xattr -cr /Applications/ServerMilk.app
+```
+
 ## Found an issue or have a proposal
 
 [Create an issue](https://github.com/ZingerLittleBee/ServerMilk/issues)
