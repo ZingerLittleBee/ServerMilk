@@ -2,6 +2,7 @@ use std::sync::{Arc, RwLock};
 use tauri::{LogicalSize, Manager};
 use window_shadows::set_shadow;
 use crate::constant::DASHBOARD_WINDOW_LABEL;
+#[cfg(target_os = "macos")]
 use crate::ext::window::WindowExt;
 use crate::hacker;
 use crate::state::SidecarState;
