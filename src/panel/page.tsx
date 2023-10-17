@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import AutoStartWidget from '@/panel/auto-start.tsx'
+import DashboardWidget from '@/panel/dashboard.tsx'
 import LogsWidget from '@/panel/logs.tsx'
 import PortWidget from '@/panel/port.tsx'
 import StatusWidget from '@/panel/status.tsx'
@@ -61,6 +62,7 @@ export default function ControlPanel() {
             </CardHeader>
             <CardContent className="grid gap-6">
                 <StatusWidget />
+                <DashboardWidget />
                 <AutoStartWidget signal={signal} />
                 <PortWidget signal={signal} />
                 <TokenWidget signal={signal} />

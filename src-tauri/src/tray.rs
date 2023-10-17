@@ -44,15 +44,9 @@ pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
                 control_panel_window.show().unwrap();
                 control_panel_window.set_focus().unwrap();
             }
-            "open_dashboard" => match dashboard_window_option {
-                None => {
-                    open_dashboard(app.clone(), app.state::<Arc<RwLock<SidecarState>>>());
-                }
-                Some(dashboard_window) => {
-                    dashboard_window.show().unwrap();
-                    dashboard_window.set_focus().unwrap();
-                }
-            },
+            "open_dashboard" => {
+                open_dashboard(app.clone(), app.state::<Arc<RwLock<SidecarState>>>())
+            }
             "log" => open_web_log(&control_panel_window.app_handle(), &control_panel_window),
             "devtool" => match dashboard_window_option {
                 Some(dashboard_window) => dashboard_window.open_devtools(),

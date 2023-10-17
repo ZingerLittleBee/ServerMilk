@@ -5,6 +5,7 @@
 
 use crate::command::auto_start::{disable_auto_start, enable_auto_start, is_enable_auto_start};
 use crate::command::dialog::open_message_dialog;
+use crate::command::dashboard::open_dashboard;
 use crate::command::log::open_log;
 use crate::command::port::{get_port, is_free_port};
 use crate::command::sidecar::{restart_sidecar, start_sidecar, start_with_new_port};
@@ -54,7 +55,8 @@ fn main() {
             enable_auto_start,
             disable_auto_start,
             restart_sidecar,
-            start_with_new_port
+            start_with_new_port,
+            open_dashboard
         ])
         .manage(Arc::new(RwLock::new(SidecarState::default())))
         .system_tray(tray::menu())
@@ -114,11 +116,11 @@ fn main() {
             main_window
                 .set_size(LogicalSize {
                     width: 420.0,
-                    height: 420.0,
+                    height: 474.0,
                 })
                 .unwrap();
             main_window.set_maximizable(false).unwrap();
-            main_window.set_minimizable(false).unwrap();
+            // main_window.set_minimizable(false).unwrap();
 
             #[cfg(target_os = "macos")]
             main_window.set_transparent_titlebar(true);
