@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api'
 
-export const openDashboardInvoke = async () => invoke('open_dashboard')
+export const openDashboardInvoke = async () => invoke('open_dashboard_command')
 
 export const openLogInvoke = async () => invoke('open_log')
 

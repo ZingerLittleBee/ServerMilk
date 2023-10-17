@@ -5,7 +5,7 @@
 
 use crate::command::auto_start::{disable_auto_start, enable_auto_start, is_enable_auto_start};
 use crate::command::dialog::open_message_dialog;
-use crate::command::dashboard::open_dashboard;
+use crate::command::dashboard::open_dashboard_command;
 use crate::command::log::open_log;
 use crate::command::port::{get_port, is_free_port};
 use crate::command::sidecar::{restart_sidecar, start_sidecar, start_with_new_port};
@@ -56,7 +56,7 @@ fn main() {
             disable_auto_start,
             restart_sidecar,
             start_with_new_port,
-            open_dashboard
+            open_dashboard_command
         ])
         .manage(Arc::new(RwLock::new(SidecarState::default())))
         .system_tray(tray::menu())

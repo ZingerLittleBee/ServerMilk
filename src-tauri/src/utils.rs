@@ -1,5 +1,4 @@
 use std::sync::{Arc, RwLock};
-use log::info;
 use tauri::api::dialog;
 use tauri::{AppHandle, Window};
 use crate::constant::DEFAULT_PORT;

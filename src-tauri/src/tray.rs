@@ -45,7 +45,16 @@ pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
                 control_panel_window.set_focus().unwrap();
             }
             "open_dashboard" => {
-                open_dashboard(app.clone(), app.state::<Arc<RwLock<SidecarState>>>())
+                match open_dashboard(app.clone(), app.state::<Arc<RwLock<SidecarState>>>()) {
+                    Ok(_) => {}
+                    Err(e) => {
+                        dialog::message(
+                            Some(&control_panel_window),
+                            "Open Dashboard",
+                            &format!("Failed to open dashboard: {}", e),
+                        );
+                    }
+                }
             }
             "log" => open_web_log(&control_panel_window.app_handle(), &control_panel_window),
             "devtool" => match dashboard_window_option {
