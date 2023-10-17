@@ -1,3 +1,15 @@
+## `2.1.0` (2023-10-17)
+
+### Features
+- Add control panel
+- Auto check status
+- New tray menu
+- Sync with server_bee-backend 2.1.2
+
+### Bug Fixes
+- Fix deadlock cause by multi window on windows
+- Fix not specified data path cause exception
+
 ## `2.0.1` (2023-10-09)
 
 ### Features
