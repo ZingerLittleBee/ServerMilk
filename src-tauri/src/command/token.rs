@@ -25,7 +25,7 @@ pub async fn fetch_token(
     let url = format!("http://localhost:{}/local/config/app", port);
 
     let client = reqwest::Client::builder()
-        .timeout(Duration::from_millis(100))
+        .timeout(Duration::from_secs(5))
         .build()
         .unwrap();
     let resp = client.get(url).send().await;
@@ -42,7 +42,7 @@ pub async fn fetch_token(
                 Ok("".into())
             }
         }
-        Err(_) => Err("failed to fetch token".into()),
+        Err(e) => Err(format!("failed to fetch token: {}", e)),
     }
 }
 
@@ -56,7 +56,7 @@ pub async fn set_token(
     let url = format!("http://localhost:{}/local/config/app", port);
 
     let client = reqwest::Client::builder()
-        .timeout(Duration::from_millis(100))
+        .timeout(Duration::from_secs(5))
         .build()
         .unwrap();
     let resp = client
