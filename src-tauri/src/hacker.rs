@@ -37,13 +37,12 @@ window.addEventListener('load', (event) => {
 
     let newDiv = document.createElement('div');
     newDiv.setAttribute('data-tauri-drag-region', '');
-    newDiv.style.height = '20px';
-    newDiv.style.width = 'calc(100% - 70px)';
+    newDiv.style.height = '30px';
     newDiv.style.position = 'absolute';
     newDiv.style.top = '0';
+    newDiv.style.width = 'calc(100% - 70px)';
     newDiv.style.marginRight = '70px'
     newDiv.style.zIndex = '999';
-    newDiv.style.cursor = 'move';
 
     document.body.prepend(newDiv);
 
@@ -61,6 +60,7 @@ window.addEventListener('load', (event) => {
     var css = `
     .titlebar-container {
         position: absolute;
+        top: 0;
         right: 0;
         z-index: 1000;
     }
@@ -80,7 +80,7 @@ window.addEventListener('load', (event) => {
         justify-content: center;
         align-items: center;
         width: 40px;
-        height: 20px;
+        height: 30px;
     }
     .titlebar-button:hover {
         background: #64748b;
@@ -163,9 +163,10 @@ window.addEventListener('load', (event) => {
 
     waitForElement('header', header => {
       let navBar = header.firstElementChild;
+      navBar.style.paddingTop = '15px';
       navBar.style.alignItems = 'end';
       navBar.firstElementChild.style.alignSelf = 'center';
-      navBar.lastElementChild.style.marginBottom = '5px';
+      navBar.lastElementChild.style.marginBottom = '0px';
     });
 });
 "#;
