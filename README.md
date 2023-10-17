@@ -7,7 +7,7 @@ Language : 🇺🇸 English | [🇨🇳 简体中文](./README.zh-CN.md)
 
 <div align="center">
 
-A desktop wrapper for [server_bee-backend](https://github.com/ZingerLittleBee/server_bee-backend)
+A desktop wrapper power by [tauri](https://github.com/tauri-apps/tauri) for [server_bee-backend](https://github.com/ZingerLittleBee/server_bee-backend)
 
 Backend for iOS application named [ServerBee](https://apps.apple.com/us/app/serverbee/id6443553714)
 
@@ -19,7 +19,12 @@ Backend for iOS application named [ServerBee](https://apps.apple.com/us/app/serv
 
 ## Snapshot
 
-<img src="./snapshot/ServerMilk.png" alt="ServerMilk" width="400"/>
+![control-panel](./snapshot/desktop-control-panel.png)
+![overview](./snapshot/desktop-overview.png)
+![process](./snapshot/desktop-process.png)
+![disk&network](./snapshot/desktop-disk&network.png)
+![terminal](./snapshot/desktop-terminal.png)
+![settings](./snapshot/desktop-settings.png)
 
 ## How to compile
 
@@ -38,6 +43,15 @@ $ pnpm tauri build
 ```
 
 and then, find release in `src-tauri/target/release/bundle`
+
+## “ServerMilk” is damaged and can’t be opened
+“ServerMilk” is damaged and can’t be opened. You should move it to the Trash.
+
+Solution: Open the terminal and enter the following command
+
+```shell
+xattr -cr /Applications/ServerMilk.app
+```
 
 ## Found an issue or have a proposal
 

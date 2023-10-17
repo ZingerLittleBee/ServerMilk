@@ -19,7 +19,12 @@ iOS 应用 [ServerBee](https://apps.apple.com/us/app/serverbee/id6443553714) 的
 
 ## 截图
 
-<img src="./snapshot/ServerMilk.png" alt="ServerMilk" width="400"/>
+![control-panel](./snapshot/desktop-control-panel.png)
+![overview](./snapshot/desktop-overview.png)
+![process](./snapshot/desktop-process.png)
+![disk&network](./snapshot/desktop-disk&network.png)
+![terminal](./snapshot/desktop-terminal.png)
+![settings](./snapshot/desktop-settings.png)
 
 ## 如何编译
 
@@ -38,6 +43,14 @@ $ pnpm tauri build
 ```
 
 在 `src-tauri/target/release/bundle` 可以找到对应的安装包
+
+## “ServerMilk” 已损坏，无法打开
+“ServerMilk”已损坏，无法打开。你应该把它移到垃圾桶里。
+
+解决方法: 打开终端输入如下命令
+```shell
+xattr -cr /Applications/ServerMilk.app
+```
 
 ## 发现问题或有建议
 

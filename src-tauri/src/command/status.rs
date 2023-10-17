@@ -1,19 +1,20 @@
-use std::time::Duration;
+use std::sync::{Arc, RwLock};
+use crate::SidecarState;
 
 #[tauri::command]
-pub async fn check_web_status(port: u16) -> bool {
-    println!("Checking web status on port {}", port);
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_millis(100))
-        .build()
-        .unwrap();
-    let resp = client
-        .get(format!("http://127.0.0.1:{}", port))
-        .send()
-        .await;
+pub fn check_running_status(state: tauri::State<Arc<RwLock<SidecarState>>>) -> bool {
+    if let Ok(state) = state.try_read() {
+        state.get_pid() > 0
+    } else {
+        false
+    }
+}
 
-    match resp {
-        Ok(resp) => resp.status().is_success(),
-        Err(_) => false,
+#[tauri::command]
+pub fn get_pid(state: tauri::State<Arc<RwLock<SidecarState>>>) -> u32 {
+    if let Ok(state) = state.try_read() {
+        state.get_pid()
+    } else {
+        0
     }
 }

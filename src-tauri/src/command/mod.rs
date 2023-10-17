@@ -1,4 +1,8 @@
-pub(crate) mod launch;
-pub(crate) mod log;
-pub(crate) mod port;
-pub(crate) mod status;
+pub mod log;
+pub mod port;
+pub mod status;
+pub mod dialog;
+pub mod auto_start;
+pub mod sidecar;
+pub mod dashboard;
+pub mod token;

@@ -1,25 +1,43 @@
 {
   "package": {
     "productName": "ServerMilk",
-    "version": "2.0.0"
+    "version": "2.1.0"
   },
   "build": {
     "beforeDevCommand": "pnpm dev",
     "beforeBuildCommand": "pnpm build",
     "devPath": "http://localhost:1420",
     "distDir": "../dist",
-    "withGlobalTauri": false
+    "withGlobalTauri": true
   },
   "tauri": {
     "allowlist": {
       "all": true,
+      "globalShortcut": {
+        "all": true
+      },
       "fs": {
         "scope": [
           "**"
         ],
         "createDir": true,
         "readDir": true,
+        "readFile": true,
         "writeFile": true
+      },
+      "path": {
+        "all": true
+      },
+      "window": {
+        "all": false,
+        "close": true,
+        "hide": true,
+        "show": true,
+        "maximize": true,
+        "minimize": true,
+        "unmaximize": true,
+        "unminimize": true,
+        "startDragging": true
       },
       "http": {
           "all": true,
@@ -88,7 +106,12 @@
       }
     },
     "security": {
-      "csp": null
+      "csp": null,
+      "dangerousRemoteDomainIpcAccess": [{
+        "domain": "localhost",
+        "windows": ["dashboard"],
+        "enableTauriAPI": true
+      }]
     },
     "updater": {
       "active": true,
@@ -100,12 +123,13 @@
     },
     "windows": [
       {
+        "transparent": true,
         "fullscreen": false,
-        "height": 430,
-        "resizable": true,
+        "width": 420.0,
+        "height": 474.0,
+        "resizable": false,
         "title": "ServerMilk",
-        "width": 320,
-        "titleBarStyle": "Transparent"
+        "visible": false
       }
     ],
     "systemTray": {
