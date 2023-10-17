@@ -14,15 +14,13 @@ use crate::command::token::{fetch_token, set_token};
 use crate::constant::{SETTINGS_FILE_NAME, CONTROL_PANEL_WINDOW_LABEL, DASHBOARD_WINDOW_LABEL};
 use log::{info, warn};
 use std::sync::{Arc, RwLock};
-use tauri::{LogicalSize, Manager};
+use tauri::Manager;
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_store::StoreBuilder;
-use window_shadows::set_shadow;
 
-#[cfg(target_os = "macos")]
-use crate::ext::window::WindowExt;
 use crate::shortcut::register_shortcut;
 use crate::state::SidecarState;
+use crate::window_manager::configure_control_panel;
 
 mod command;
 mod constant;
@@ -33,6 +31,8 @@ mod shortcut;
 mod state;
 mod tray;
 mod utils;
+
+mod window_manager;
 
 fn main() {
     tauri::Builder::default()
@@ -111,34 +111,8 @@ fn main() {
             start_sidecar(app.handle(), state.clone(), None);
 
             let main_window = app.get_window("main").unwrap();
-            // main_window.hide().unwrap();
-            main_window.set_title("Control Panel").unwrap();
-            main_window
-                .set_size(LogicalSize {
-                    width: 420.0,
-                    height: 474.0,
-                })
-                .unwrap();
-            main_window.set_maximizable(false).unwrap();
-            // main_window.set_minimizable(false).unwrap();
 
-            #[cfg(target_os = "macos")]
-            main_window.set_transparent_titlebar(true);
-
-            #[cfg(target_os = "macos")]
-            main_window.set_decorations(true).unwrap();
-
-            main_window.show().unwrap();
-
-            #[cfg(not(target_os = "macos"))]
-            main_window.set_decorations(false).unwrap();
-
-            set_shadow(&main_window, true).unwrap();
-
-            #[cfg(not(target_os = "macos"))]
-            main_window.eval(hacker::CRATE_DRAG_REGION).unwrap();
-
-            // open_dashboard(app.handle());
+            configure_control_panel(&main_window);
 
             register_shortcut(app.handle());
             Ok(())

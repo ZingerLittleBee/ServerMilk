@@ -1,4 +1,3 @@
-use crate::command::dashboard::open_dashboard;
 use crate::state::SidecarState;
 use crate::utils::open_web_log;
 use std::sync::{Arc, RwLock};
@@ -8,6 +7,7 @@ use tauri::{
     AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
     SystemTrayMenuItem,
 };
+use crate::window_manager::open_dashboard;
 
 pub fn menu() -> SystemTray {
     let tray_menu = SystemTrayMenu::new()
@@ -51,7 +51,7 @@ pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
                         dialog::message(
                             Some(&control_panel_window),
                             "Open Dashboard",
-                            &format!("Failed to open dashboard: {}", e),
+                            format!("Failed to open dashboard: {}", e),
                         );
                     }
                 }

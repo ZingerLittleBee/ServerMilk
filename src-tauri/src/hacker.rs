@@ -170,3 +170,24 @@ window.addEventListener('load', (event) => {
     });
 });
 "#;
+
+#[cfg(target_os = "macos")]
+pub const MODIFY_CONTROL_DRAG_REGION: &str = r#"
+window.addEventListener('load', (event) => {
+    function waitForElement(selector, callback) {
+      const element = document.querySelector(selector);
+
+      if(element) {
+        callback(element);
+        return;
+      }
+
+      setTimeout(() => waitForElement(selector, callback), 100);
+    }
+
+    waitForElement('body', body => {
+      const dragRegion = body.firstElementChild;
+      dragRegion.style.position = 'absolute';
+    });
+});
+"#;
