@@ -126,6 +126,8 @@ fn main() {
             #[cfg(target_os = "macos")]
             main_window.set_decorations(true).unwrap();
 
+            main_window.show().unwrap();
+
             #[cfg(not(target_os = "macos"))]
             main_window.set_decorations(false).unwrap();
 
