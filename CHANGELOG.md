@@ -1,3 +1,8 @@
+## `2.2.1` (2023-10-26)
+
+### Chore
+- Sync with server_bee-backend 2.2.1
+
 ## `2.2.0` (2023-10-22)
 
 ### Chore
