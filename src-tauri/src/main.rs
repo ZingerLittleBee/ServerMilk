@@ -18,7 +18,6 @@ use tauri::Manager;
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_store::StoreBuilder;
 
-use crate::shortcut::register_shortcut;
 use crate::state::SidecarState;
 use crate::window_manager::configure_control_panel;
 
@@ -114,7 +113,7 @@ fn main() {
 
             configure_control_panel(&main_window);
 
-            register_shortcut(app.handle());
+            // register_shortcut(app.handle());
             Ok(())
         })
         .run(tauri::generate_context!())
