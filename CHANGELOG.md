@@ -1,3 +1,8 @@
+## `2.2.2` (2023-11-15)
+
+### Chore
+- Disable global shortcut
+
 ## `2.2.1` (2023-10-26)
 
 ### Chore
