@@ -47,6 +47,8 @@ window.addEventListener('load', (event) => {
     document.body.prepend(newDiv);
 
     var appWindow = window.__TAURI__.window.appWindow;
+    const invoke = window.__TAURI__.invoke;
+
     document
         .getElementById('titlebar-minimize')
         .addEventListener('click', () => appWindow.minimize())
@@ -55,7 +57,7 @@ window.addEventListener('load', (event) => {
         .addEventListener('click', () => appWindow.toggleMaximize())
     document
         .getElementById('titlebar-close')
-        .addEventListener('click', () => appWindow.close())
+        .addEventListener('click', () => invoke('exit_command'))
 
     var css = `
     .titlebar-container {

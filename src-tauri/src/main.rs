@@ -17,6 +17,7 @@ use std::sync::{Arc, RwLock};
 use tauri::Manager;
 use tauri_plugin_autostart::MacosLauncher;
 use tauri_plugin_store::StoreBuilder;
+use crate::command::exit::exit_command;
 
 use crate::state::SidecarState;
 use crate::window_manager::configure_control_panel;
@@ -55,13 +56,15 @@ fn main() {
             disable_auto_start,
             restart_sidecar,
             start_with_new_port,
-            open_dashboard_command
+            open_dashboard_command,
+            exit_command
         ])
         .manage(Arc::new(RwLock::new(SidecarState::default())))
         .system_tray(tray::menu())
         .on_system_tray_event(tray::handler)
         .on_window_event(|event| {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event.event() {
+                println!("close requested");
                 match event.window().label() {
                     CONTROL_PANEL_WINDOW_LABEL => {
                         event.window().hide().unwrap();

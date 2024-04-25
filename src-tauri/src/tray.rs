@@ -37,57 +37,61 @@ pub fn menu() -> SystemTray {
 pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
     let control_panel_window = app.get_window("main").unwrap();
     let dashboard_window_option = app.get_window("dashboard");
-
-    if let SystemTrayEvent::MenuItemClick { id, .. } = event {
-        match id.as_str() {
-            "open_control_panel" => {
-                control_panel_window.show().unwrap();
-                control_panel_window.set_focus().unwrap();
-            }
-            "open_dashboard" => {
-                match open_dashboard(app.clone(), app.state::<Arc<RwLock<SidecarState>>>()) {
-                    Ok(_) => {}
-                    Err(e) => {
-                        dialog::message(
-                            Some(&control_panel_window),
-                            "Open Dashboard",
-                            format!("Failed to open dashboard: {}", e),
-                        );
+    
+    match event {
+        SystemTrayEvent::MenuItemClick {id, ..} => {
+            match id.as_str() {
+                "open_control_panel" => {
+                    control_panel_window.show().unwrap();
+                    control_panel_window.set_focus().unwrap();
+                }
+                "open_dashboard" => {
+                    match open_dashboard(app.clone(), app.state::<Arc<RwLock<SidecarState>>>()) {
+                        Ok(_) => {}
+                        Err(e) => {
+                            dialog::message(
+                                Some(&control_panel_window),
+                                "Open Dashboard",
+                                format!("Failed to open dashboard: {}", e),
+                            );
+                        }
                     }
                 }
-            }
-            "log" => open_web_log(&control_panel_window.app_handle(), &control_panel_window),
-            "devtool" => match dashboard_window_option {
-                Some(dashboard_window) => dashboard_window.open_devtools(),
-                None => {
-                    control_panel_window.open_devtools();
+                "log" => open_web_log(&control_panel_window.app_handle(), &control_panel_window),
+                "devtool" => match dashboard_window_option {
+                    Some(dashboard_window) => dashboard_window.open_devtools(),
+                    None => {
+                        control_panel_window.open_devtools();
+                    }
+                },
+                "update" => {
+                    let app_clone = app.clone();
+
+                    spawn(async move {
+                        let res = app_clone.updater().check().await.unwrap();
+
+                        dialog::message(
+                            Some(&app_clone.get_window("main").unwrap()),
+                            "Update",
+                            if res.is_update_available() {
+                                "Update available"
+                            } else {
+                                "No update available"
+                            },
+                        )
+                    });
                 }
-            },
-            "update" => {
-                let app_clone = app.clone();
-
-                spawn(async move {
-                    let res = app_clone.updater().check().await.unwrap();
-
-                    dialog::message(
-                        Some(&app_clone.get_window("main").unwrap()),
-                        "Update",
-                        if res.is_update_available() {
-                            "Update available"
-                        } else {
-                            "No update available"
-                        },
-                    )
-                });
+                "settings" => {
+                    control_panel_window.show().unwrap();
+                    control_panel_window.center().unwrap();
+                }
+                "quit" => {
+                    app.exit(0);
+                }
+                _ => {}
             }
-            "settings" => {
-                control_panel_window.show().unwrap();
-                control_panel_window.center().unwrap();
-            }
-            "quit" => {
-                app.exit(0);
-            }
-            _ => {}
-        }
+        },
+        SystemTrayEvent::LeftClick {..} | SystemTrayEvent::DoubleClick {..} => control_panel_window.show().unwrap(),
+        _ => {}
     }
 }
